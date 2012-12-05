@@ -1,0 +1,58 @@
+ <!DOCTYPE html
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
+		<title>Cloud Lab: Log-in</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		
+	</head>
+	
+	<body>				
+		
+		<script>
+			$(document).ready(function () 
+				{
+					$()
+				})
+		</script>
+		
+		<div id="header" style="text-align: center; font-size: 40px;">Welcome To CloudLab</div>
+		
+		<div id="centerContainer" class="custom_style">
+			<img src="images/clouds.jpg" id="back-image"/>
+			<ul>
+				<li class="loginElements">
+					<label for="userText" style="font-size: 20px;">Username: </label>
+					<input id="userText" type="text" value="mdelong"></input>					
+				</li>
+				
+				<li class="loginElements">
+					<label for="passText" style="font-size: 20px;">Password: </label>
+					<input id="passText" type="text" value="M"></input>					
+				</li>
+				
+				<li class="loginElements">
+					<input id="loginButton" type="button" class="button_e_style" value="Log-In" onclick="logIn()"></input>
+				</li>
+				
+				<li class="loadingElements" style="display: none">
+					<img src="images/loading.gif"/>
+				</li>
+									
+				<li class="loadingElements" style="display: none">
+					Attempting to Log-In...
+				</li>
+				
+			</ul> 
+		
+		</div>
+		
+		<div id="aboutContainer">
+			About
+		</div>
+	</body>
+	
+</html>
+
