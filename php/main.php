@@ -23,6 +23,22 @@
                 "courses" => ($courses == null) ? array() : $courses
             ));
         }
+        // Get the list of projects for the chosen course
+        else if (!empty($_POST['getProjects'])) {                        
+            $username = $_COOKIE['username'];
+            $firstname = $_COOKIE['firstname'];
+            $role = $_COOKIE['role'];
+            $course = $_POST['getProjects'];
+            $projects = $main->getProjects($course);
+            $output = $main->buildResponse("OK", array(
+                "username" => $username,
+                "firstname" => $firstname,
+                "role" => $role,
+                "course" => $course,
+                "projects" => ($projects == null) ? array() : $projects
+            ));            
+            
+        }
         // Default response: simply inform the client that the user is logged in
         else if (!empty($_POST['validate'])) {
             // Send some personalized data
@@ -198,7 +214,7 @@
         }
         
         /**
-         * Retrieve a list of courses that the user is enrolled in
+         * Retrieve the list of courses that the user is enrolled in
          */
         public function getCourses ($user) {
             if ($user == null) {
@@ -220,6 +236,28 @@
                 }                
                 return $courses;
             }
+        }
+        
+        /**
+         * Retrieve the list of projects of the chosen course
+         */
+        public function getProjects ($course) {
+            $course = mysql_real_escape_string($course);
+            $query = "SELECT project_name AS project FROM Projects WHERE course_id='" . $course . "'";
+            if (($result = $this->dbm->query($query)) == null) {                
+                return null;
+            }
+            else {                
+                if (mysql_num_rows($result) == 0) {                    
+                    $projects = null;
+                }
+                // Iterate as long as we have rows in the result set  
+                $projects = array();
+                while ($row = mysql_fetch_assoc($result)) {                    
+                    array_push($projects, $row['project']);
+                }                
+                return $projects;
+            }        
         }
         
     }  

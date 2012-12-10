@@ -31,8 +31,6 @@
 		</script>
 		
 		<div id="header">
-			<a href="">Back</a> <!-- TODO: Add a back arrow image -->
-			<span>Choose Course</span>
 			<script>
 				$(function () {
 					$( "#header button" ).click(function () {
@@ -47,8 +45,14 @@
 							dataType = "text";						
 						$.post(url, data, success, dataType);
 					});
+					
+					$( "#backButton" ).click(function () {
+						window.location.href=document.referrer;
+					});					
 				});
-			</script>
+			</script>			
+			<a href="">Back</a> <!-- TODO: Add a back arrow image -->
+			<span>Choose Course</span>
 			<span id="header_username"></span>	
 			<!--<a>Logout</a>				-->
 			<button>Logout</button>			
@@ -67,17 +71,32 @@
 			<li><a href="">Preferences</a></li>
 		</ul>		
 		
-		<!-- Dynamically populated via AWS EC2/EBS -->
-		<div id="file_browser">			
-		</div>
+		<fieldset>
+			<legend>Edit File</legend>
+			<!-- Dynamically populated via AWS RDS -->
+			<div id="file_browser">
+				<ul id="editor_listOfFiles">
+					<!--<li><a href="">main.c</a></li>-->
+					<!--<li><a href="">main.h</a></li>-->					
+				</ul>
+			</div>
+		</fieldset>
 		
-		<!-- Text from the file is displayed here -->		
-		<div id="file_editor">			
-		</div>
+		<fieldset>
+			<legend>Code Editor</legend>
+			<!-- Text from the file is displayed here -->
+			<!-- TODO: Embed Ace Editor here -->
+			<div id="file_editor">			
+			</div>
+		</fieldset>
 		
-		<!-- An (currently) non-interactive terminal for displaying compiler and run-time output -->
-		<div id="terminal">			
-		</div>
+		<fieldset>
+			<legend>Terminal</legend>
+			<!-- A (currently) non-interactive terminal for displaying compiler and run-time output -->
+			<!-- TODO: Embed Ace Editor here -->
+			<div id="terminal">			
+			</div>
+		</fieldset>
 		
 	</body>	
 </html>

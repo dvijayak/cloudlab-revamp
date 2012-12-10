@@ -13,7 +13,7 @@
 			$(document).ready(function () {
 				// Ensure that the user is logged in	
 				var url = "http://localhost/cloudlab_revamp/php/main.php",
-					data = "getCourses=true&validate=true",
+					data = "getCourses=true",
 					success = function (data) {						
 						var output = $.parseJSON(data);
 						if (output.status == "OK") {							
@@ -27,7 +27,7 @@
 								/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
 								 * Otherwise, courses[i] would take the value of undefined
 								 */								
-								$( "<li><a href='#'>" + courses[i] + "</a></li>").click({course: courses[i]}, function (event) {
+								$( "<li><a href='#'>" + courses[i].toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
 									window.location.href = "projects.html?course=" + event.data.course;
 								}).appendTo( "#courses_listOfCourses" );
 							}
@@ -44,7 +44,6 @@
 		</script>
 		
 		<div id="header">
-			<span>Choose Course</span>
 			<script>
 				$(function () {
 					$( "#header button" ).click(function () {
@@ -60,7 +59,8 @@
 						$.post(url, data, success, dataType);
 					});
 				});
-			</script>
+			</script>			
+			<span>Choose Course</span>
 			<span id="header_username"></span>	
 			<!--<a>Logout</a>				-->
 			<button>Logout</button>				
@@ -70,7 +70,7 @@
 			<fieldset>
 				<legend>Go To Course</legend> <!-- TODO: Use CSS to align in the middle -->
 				
-				<!-- List of courses is dynamically created via calls to AWS EC2/EBS -->				
+				<!-- List of courses is dynamically created via calls to AWS RDS -->				
 				<ul id="courses_listOfCourses">					
 					<!--<li><a href="">CIS*1500</a></li>-->
 					<!--<li><a href="">CIS*2750</a></li>-->

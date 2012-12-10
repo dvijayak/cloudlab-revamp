@@ -31,7 +31,6 @@
 		</script>
 		
 		<div id="header">
-			<span>Administrator Control Panel</span>
 			<script>
 				$(function () {
 					$( "#header button" ).click(function () {
@@ -47,7 +46,8 @@
 						$.post(url, data, success, dataType);
 					});
 				});
-			</script>
+			</script>			
+			<span>Administrator Control Panel</span>
 			<span id="header_username"></span>	
 			<!--<a>Logout</a>				-->
 			<button>Logout</button>

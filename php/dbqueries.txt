@@ -6,13 +6,14 @@ CREATE TABLE Courses (
 );
 
 CREATE TABLE Projects (
-    project_id VARCHAR(10) NOT NULL,
+    project_id SMALLINT UNSIGNED AUTO_INCREMENT NOT NULL,
     course_id VARCHAR(10) NOT NULL,
-    project_name VARCHAR(20) UNIQUE,
+    project_name VARCHAR(20),
     project_desc TEXT,
     project_expiry DATE,
     PRIMARY KEY(project_id),
-    FOREIGN KEY(course_id) references Courses(course_id)
+    FOREIGN KEY(course_id) references Courses(course_id),
+    CONSTRAINT course_project UNIQUE(course_id, project_name)
 );
 
 CREATE TABLE Groups (
@@ -40,7 +41,10 @@ CREATE TABLE Files (
     file_id MEDIUMINT UNSIGNED AUTO_INCREMENT NOT NULL,
     file_name VARCHAR(30) NOT NULL,
     file_ext VARCHAR(10) NOT NULL,    
-    project_id VARCHAR(10) NOT NULL,
+    project_id SMALLINT UNSIGNED NOT NULL,
+    file_data BLOB NOT NULL,
+    file_compiled_data BLOB,
+    file_compiled_output BLOB,
     PRIMARY KEY(file_id),
     FOREIGN KEY(project_id) references Projects(project_id)
 );

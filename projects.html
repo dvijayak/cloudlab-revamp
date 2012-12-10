@@ -11,13 +11,26 @@
 	<body>						
 		<script>
 			$(document).ready(function () {
-				// Ensure that the user is logged in	
+				// Ensure that the user is logged in				
 				var url = "http://localhost/cloudlab_revamp/php/main.php",
-					data = "validate=true",
-					success = function (data) {
-						var output = $.parseJSON(data);
-						if (output.status == "OK") {
-							$( "#header_username" ).text(output.data.firstname);								
+					data = "getProjects=" + document.URL.split("=")[1],
+					success = function (data) {						
+						var output = $.parseJSON(data);						
+						if (output.status == "OK") {							
+							$( "#header_username" ).text(output.data.firstname);
+							
+							// Generate list of projects for the chosen course
+							var projects = output.data.projects;
+							var nProjects = projects.length;
+							for (var i = 0; i < nProjects; i++) {
+								
+								/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
+								 * Otherwise, projects[i] would take the value of undefined
+								 */								
+								$( "<li><a href='#'>" + projects[i].toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {
+									window.location.href = "editor.html?course=" + output.data.course + "&project=" + event.data.project;
+								}).appendTo( "#projects_listOfProjects" );
+							}							
 						}
 						// Incorrect login credentials
 						else if (output.status == "INTRUDER") {
@@ -31,8 +44,6 @@
 		</script>
 		
 		<div id="header">
-			<a href="">Back</a> <!-- TODO: Add a back arrow image -->
-			<span>Choose Course</span>
 			<script>
 				$(function () {
 					$( "#header button" ).click(function () {
@@ -47,8 +58,16 @@
 							dataType = "text";						
 						$.post(url, data, success, dataType);
 					});
+					
+					$( "#backButton" ).click(function () {
+						window.location.href=document.referrer;
+					});
+					
+					$( "#header_title" ).text(document.URL.split("=")[1].toUpperCase() + ": Choose Project");
 				});
-			</script>
+			</script>			
+			<button id="backButton">Back</button> <!-- TODO: Add a back arrow image -->
+			<span id="header_title"></span>
 			<span id="header_username"></span>	
 			<!--<a>Logout</a>				-->
 			<button>Logout</button>			
@@ -68,13 +87,25 @@
 			<li><a href="">Distribute</a></li>
 		</ul>		
 		
-		<!-- Dynamically populated via AWS EC2/EBS -->
-		<div id="project_browser">			
-		</div>
+		<!-- TODO: fieldset is a temporary solution -->
+		<fieldset>
+			<legend>Go To Project</legend>
+			<div id="project_browser">
+				<!-- List of projects is dynamically populated via AWS RDS -->
+				<ul id="projects_listOfProjects">
+					<!--<li><a href="">A1</a></li>-->
+					<!--<li><a href="">A2</a></li>-->
+					<!--<li><a href="">A3</a></li>-->
+				</ul>
+			</div>
+		</fieldset>
 		
 		<!-- When a project is selected, generate the project description in HTML from various input sources: .md, .ps, .tex, etc.-->
 		<div id="project_preview">
-			<iframe></iframe>
+			<fieldset>
+				<legend>Project Preview</legend>
+				<iframe></iframe>
+			</fieldset>
 		</div>
 		
 	</body>	
