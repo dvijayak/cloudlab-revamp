@@ -4,6 +4,8 @@
     
 	error_reporting(-1);		
 	
+	// ATTENTION: MAKE SURE TO CREATE THE PRIVATE CLASSES FOR COURSE, FILE, PROJECT, USER AND GROUP OBJECTS
+	
 	class CourseManager {
 	
 		private $ec2;	

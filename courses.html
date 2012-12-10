@@ -1,0 +1,84 @@
+ <!DOCTYPE html
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
+		<title>Cloud Lab: Choose Course</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>		
+	</head>
+	
+	<body>						
+		<script>
+			$(document).ready(function () {
+				// Ensure that the user is logged in	
+				var url = "http://localhost/cloudlab_revamp/php/main.php",
+					data = "getCourses=true&validate=true",
+					success = function (data) {						
+						var output = $.parseJSON(data);
+						if (output.status == "OK") {							
+							$( "#header_username" ).text(output.data.firstname);
+							
+							// Generate list of courses for the user
+							var courses = output.data.courses;
+							var nCourses = courses.length;
+							for (var i = 0; i < nCourses; i++) {
+								
+								/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
+								 * Otherwise, courses[i] would take the value of undefined
+								 */								
+								$( "<li><a href='#'>" + courses[i] + "</a></li>").click({course: courses[i]}, function (event) {
+									window.location.href = "projects.html?course=" + event.data.course;
+								}).appendTo( "#courses_listOfCourses" );
+							}
+						}
+						// Incorrect login credentials
+						else if (output.status == "INTRUDER") {
+							alert("Back off, intruder!");
+							window.location.href = "index.html";							
+						}
+					},
+					dataType = "text";						
+				$.post(url, data, success, dataType);				
+			});
+		</script>
+		
+		<div id="header">
+			<span>Choose Course</span>
+			<script>
+				$(function () {
+					$( "#header button" ).click(function () {
+						var url = "http://localhost/cloudlab_revamp/php/main.php",
+							data = "logout=true",
+							success = function (data) {
+								var output = $.parseJSON(data);
+								if (output.status == "LOGOUT") {									
+									window.location.href = "index.html";
+								}
+							},
+							dataType = "text";						
+						$.post(url, data, success, dataType);
+					});
+				});
+			</script>
+			<span id="header_username"></span>	
+			<!--<a>Logout</a>				-->
+			<button>Logout</button>				
+		</div>
+		
+		<div id="centerContainer">
+			<fieldset>
+				<legend>Go To Course</legend> <!-- TODO: Use CSS to align in the middle -->
+				
+				<!-- List of courses is dynamically created via calls to AWS EC2/EBS -->				
+				<ul id="courses_listOfCourses">					
+					<!--<li><a href="">CIS*1500</a></li>-->
+					<!--<li><a href="">CIS*2750</a></li>-->
+					<!--<li><a href="">CIS*3760</a></li>-->					
+				</ul>
+				
+			</fieldset>
+		</div>
+	</body>	
+</html>
+

@@ -1,0 +1,62 @@
+CREATE TABLE Courses (
+    course_id VARCHAR(10) NOT NULL,
+    course_name VARCHAR(20) UNIQUE,
+    course_desc TEXT,
+    PRIMARY KEY(course_id)
+);
+
+CREATE TABLE Projects (
+    project_id VARCHAR(10) NOT NULL,
+    course_id VARCHAR(10) NOT NULL,
+    project_name VARCHAR(20) UNIQUE,
+    project_desc TEXT,
+    project_expiry DATE,
+    PRIMARY KEY(project_id),
+    FOREIGN KEY(course_id) references Courses(course_id)
+);
+
+CREATE TABLE Groups (
+    group_id MEDIUMINT UNSIGNED AUTO_INCREMENT NOT NULL,
+    group_name VARCHAR(20) UNIQUE,
+    group_desc TEXT,
+    PRIMARY KEY(group_id)
+);
+
+CREATE TABLE Users (
+    user_number CHAR(7) NOT NULL,
+    user_id VARCHAR(10) UNIQUE NOT NULL,    
+    user_passhash VARCHAR(32) NOT NULL,
+    user_firstname VARCHAR(20) NOT NULL,
+    user_lastname VARCHAR(20) NOT NULL,
+    user_email VARCHAR(25) UNIQUE,
+    course_id VARCHAR(10) NOT NULL,    
+    group_id MEDIUMINT UNSIGNED NOT NULL,
+    PRIMARY KEY(user_number),
+    FOREIGN KEY(course_id) references Courses(course_id),
+    FOREIGN KEY(group_id) references Groups(group_id)    
+);
+
+CREATE TABLE Files (
+    file_id MEDIUMINT UNSIGNED AUTO_INCREMENT NOT NULL,
+    file_name VARCHAR(30) NOT NULL,
+    file_ext VARCHAR(10) NOT NULL,    
+    project_id VARCHAR(10) NOT NULL,
+    PRIMARY KEY(file_id),
+    FOREIGN KEY(project_id) references Projects(project_id)
+);
+
+CREATE TABLE Enrollments (
+    enrol_id SMALLINT UNSIGNED AUTO_INCREMENT NOT NULL,
+    course_id VARCHAR(10) NOT NULL,
+    user_id VARCHAR(10) NOT NULL,
+    PRIMARY KEY(enrol_id),
+    FOREIGN KEY(course_id) references Courses(course_id),
+    FOREIGN KEY(user_id) references Users(user_id)
+);
+
+INSERT INTO Users VALUES ('0654928', 'mdelong', MD5('M'), 'Michael', 'Delong', 'mdelong@uoguelph.ca', 1);
+INSERT INTO Users VALUES ('0634258', 'dvijayak', MD5('D'), 'Daniel', 'Vijayakumar', 'dvijayak@uoguelph.ca', 1);
+INSERT INTO Users VALUES ('0111111', 'qmahmoud', MD5('Q'), 'Qusay', 'Mahmoud', 'qmahmoud@uoguelph.ca', 2);
+INSERT INTO Users VALUES ('0000000', 'socsadmin', MD5('admin'), 'Administration', 'SOCS', 'admin@socs.uoguelph.ca', 3);
+
+INSERT INTO Enrollments VALUES ();
