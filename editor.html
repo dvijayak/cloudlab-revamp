@@ -10,14 +10,22 @@
 	
 	<body>						
 		<script>
-			$(document).ready(function () {
-				// Ensure that the user is logged in	
-				var url = "http://localhost/cloudlab_revamp/php/main.php",
-					data = "validate=true",
+			$(document).ready(function () {				
+				// Ensure that the user is logged in				
+				var url = "http://localhost/cloudlab_revamp/php/main.php",				
+					//data = "course=" + document.URL.split("=")[1] + "&project=" + document.URL.split("=")[2] + "&getFiles=true",
+					data = document.URL.split("?")[1] + "&getFiles=true",
 					success = function (data) {
+						alert(data);
 						var output = $.parseJSON(data);
 						if (output.status == "OK") {
 							$( "#header_username" ).text(output.data.firstname);
+							
+							// Hide toolbar if Instructor
+							if (output.data.role != "1") {
+								$( "#editor_toolbar" ).hide();
+							}							
+							
 						}
 						// Incorrect login credentials
 						else if (output.status == "INTRUDER") {

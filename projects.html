@@ -13,17 +13,22 @@
 			$(document).ready(function () {
 				// Ensure that the user is logged in				
 				var url = "http://localhost/cloudlab_revamp/php/main.php",
-					data = "getProjects=" + document.URL.split("=")[1],
+					//data = "course=" + document.URL.split("=")[1] + "&getProjects=true",
+					data = document.URL.split("?")[1] + "&getProjects=true",
 					success = function (data) {						
 						var output = $.parseJSON(data);						
 						if (output.status == "OK") {							
 							$( "#header_username" ).text(output.data.firstname);
 							
+							// Hide toolbar if Student
+							if (output.data.role != "2") {
+								$( "#projects_toolbar" ).hide();
+							}
+							
 							// Generate list of projects for the chosen course
 							var projects = output.data.projects;
 							var nProjects = projects.length;
-							for (var i = 0; i < nProjects; i++) {
-								
+							for (var i = 0; i < nProjects; i++) {								
 								/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
 								 * Otherwise, projects[i] would take the value of undefined
 								 */								
