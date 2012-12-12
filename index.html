@@ -4,16 +4,15 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
 		<title>Cloud Lab: Log-in</title>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-		
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script src="js/util.js"></script>
 	</head>
 	
 	<body>				
 		
 		<script>			
-			$(document).ready(function () {
-				
+			$(document).ready(function () {				
 			});
 		</script>
 		
@@ -26,22 +25,15 @@
 					$( "#loginButton" ).click(function () {
 						var url = "http://localhost/cloudlab_revamp/php/main.php",
 							data = "username=" + $( "#userText" ).val() + "&password=" + CryptoJS.MD5($( "#passText" ).val()),
-							success = function (data) {								
-								var output = $.parseJSON(data);								
-								if (output.status == "OK") {									
-									switch (output.data.role) {
-										case "3":
-											window.location.href = "admin.html";
-											break;
-										case "2":
-											window.location.href = "courses.html";
-											break;
-										case "1":
-											window.location.href = "courses.html";
-											break;
-										default:
-											alert("Error: missing JSON key 'role'.");
-									}									
+							success = function (output) {								
+								if (output.status == "OK") {
+									var cookies = Util.cookiesToArray();
+									if (cookies['role'] == "3") {
+										window.location.href="admin.html";
+									}
+									else if (cookies['role'] == "2" || cookies['role'] == "1") {
+										window.location.href="courses.html";
+									}
 								}
 								// Incorrect login credentials
 								else if (output.status == "INTRUDER") {									
@@ -49,7 +41,7 @@
 									window.location.href = "index.html";
 								}
 							},
-							dataType = "text";						
+							dataType = "json";						
 						$.post(url, data, success, dataType);
 					});
 				});

@@ -5,19 +5,29 @@
 		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
 		<title>Cloud Lab: Choose Course</title>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>		
-	</head>
-	
-	<body>						
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script>
-			$(document).ready(function () {
+			$(function () {
 				// Ensure that the user is logged in	
 				var url = "http://localhost/cloudlab_revamp/php/main.php",
 					data = "getCourses=true",
-					success = function (data) {						
-						var output = $.parseJSON(data);
-						if (output.status == "OK") {							
-							$( "#header_username" ).text(output.data.firstname);
+					success = function (output) {						
+						//var output = $.parseJSON(data);
+						if (output.status == "OK") {
+							// TODO: Make a function that converts document.cookie into an associative array (PLEASE!)
+							var cookies = document.cookie.split(";");			
+							var n = cookies.length;
+							for (var i = 0; i < n; i++) {
+								var cookie = cookies[i].split("=");
+								// For some reason, key/value pairs in document.cookie are delimited by "; " instead of just ";"
+								if ($.trim(cookie[0]) == "firstname") {
+									$( "#header_username" ).text(cookie[1]);
+									alert(cookie[1]);
+								}
+							}							
+
+														
+							//$( "#header_username" ).text(output.data.firstname);
 							
 							// Generate list of courses for the user
 							var courses = output.data.courses;
@@ -38,8 +48,44 @@
 							window.location.href = "index.html";							
 						}
 					},
-					dataType = "text";						
-				$.post(url, data, success, dataType);				
+					dataType = "json";						
+				$.post(url, data, success, dataType);					
+			});
+		</script>
+	</head>
+	
+	<body>						
+		<script>
+			$(document).ready(function () {
+				//// Ensure that the user is logged in	
+				//var url = "http://localhost/cloudlab_revamp/php/main.php",
+				//	data = "getCourses=true",
+				//	success = function (data) {						
+				//		var output = $.parseJSON(data);
+				//		if (output.status == "OK") {							
+				//			$( "#header_username" ).text(output.data.firstname);
+				//			
+				//			// Generate list of courses for the user
+				//			var courses = output.data.courses;
+				//			var nCourses = courses.length;
+				//			for (var i = 0; i < nCourses; i++) {
+				//				
+				//				/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
+				//				 * Otherwise, courses[i] would take the value of undefined
+				//				 */								
+				//				$( "<li><a href='#'>" + courses[i].toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
+				//					window.location.href = "projects.html?course=" + event.data.course;
+				//				}).appendTo( "#courses_listOfCourses" );
+				//			}
+				//		}
+				//		// Incorrect login credentials
+				//		else if (output.status == "INTRUDER") {
+				//			alert("Back off, intruder!");
+				//			window.location.href = "index.html";							
+				//		}
+				//	},
+				//	dataType = "text";						
+				//$.post(url, data, success, dataType);				
 			});
 		</script>
 		
