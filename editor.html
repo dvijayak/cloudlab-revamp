@@ -12,7 +12,8 @@
 			var data = document.URL.split("?")[1] + "&getFiles=true";
 			Util.validateSession(function (output) {
 				// Hide toolbar if Instructor
-				if (output.data.role != "1") {
+				var cookies = Util.cookiesToArray();
+				if (cookies['role'] != "1") {	
 					$( "#editor_toolbar" ).hide();
 				}	
 				

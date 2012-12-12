@@ -18,43 +18,27 @@
         // If user is validly logged in already, carry on
         if ($main->validateSession()) {        
             // Get the list of courses for the user
-            if (!empty($_POST['getCourses'])) {
-                $username = $_COOKIE['username'];
-                $firstname = $_COOKIE['firstname'];
+            if (!empty($_POST['getCourses'])) {                
                 $courses = $main->getCourses();            
-                $output = $main->buildResponse("OK", array(
-                    "username" => $username,
-                    "firstname" => $firstname,
+                $output = $main->buildResponse("OK", array(                    
                     "courses" => ($courses == null) ? array() : $courses
                 ));
             }
             // Get the list of projects for the chosen course
-            else if (!empty($_POST['getProjects'])) {                        
-                $username = $_COOKIE['username'];
-                $firstname = $_COOKIE['firstname'];
-                $role = $_COOKIE['role'];
+            else if (!empty($_POST['getProjects'])) {                                        
                 $course = $_POST['course'];
                 $projects = $main->getProjects($course);
-                $output = $main->buildResponse("OK", array(
-                    "username" => $username,
-                    "firstname" => $firstname,
-                    "role" => $role,
+                $output = $main->buildResponse("OK", array(                    
                     "course" => $course,
                     "projects" => ($projects == null) ? array() : $projects
                 ));            
                 
             }
             // Get the list of files for the chosen project
-            else if (!empty($_POST['getFiles'])) {                        
-                $username = $_COOKIE['username'];
-                $firstname = $_COOKIE['firstname'];
-                $role = $_COOKIE['role'];
+            else if (!empty($_POST['getFiles'])) {                                        
                 $course = $_POST['course'];
                 $project = $_POST['project'];            
-                $output = $main->buildResponse("OK", array(
-                    "username" => $username,
-                    "firstname" => $firstname,
-                    "role" => $role,
+                $output = $main->buildResponse("OK", array(                    
                     "course" => $course,
                     "project" => $project,
                     "filess" => ($files == null) ? array() : $files
@@ -62,14 +46,8 @@
                 
             }        
             // Default response: simply inform the client that the user is logged in
-            else if (!empty($_POST['validate'])) {
-                // Send some personalized data
-                $username = $_COOKIE['username'];
-                $firstname = $_COOKIE['firstname'];
-                $output = $main->buildResponse("OK", array(
-                    "username" => $username,
-                    "firstname" => $firstname               
-                ));            
+            else if (!empty($_POST['validate'])) {                
+                $output = $main->buildResponse("OK");            
             }        
             
             //// Loop through the post keys and handle the request accordingly
@@ -139,17 +117,8 @@
                 $output = $main->buildResponse("INTRUDER");            
             }
             // Authentication succeeded!
-            else {
-                // Send some personalized data
-                $temp = $main->getTempUserData();
-                $username = $temp['username'];
-                $firstname = $temp['firstname'];
-                $role = $temp['role'];
-                $output = $main->buildResponse("OK", array(
-                    "username" => $username,
-                    "firstname" => $firstname,
-                    "role" => $role // Most important part of the data response
-                ));            
+            else {                
+                $output = $main->buildResponse("OK");            
             }
         }
     }

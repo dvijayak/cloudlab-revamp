@@ -11,7 +11,8 @@
 			var data = document.URL.split("?")[1] + "&getProjects=true";
 			Util.validateSession(function (output) {
 				// Hide toolbar if Student
-				if (output.data.role != "2") {
+				var cookies = Util.cookiesToArray();
+				if (cookies['role'] != "2") {				
 					$( "#projects_toolbar" ).hide();
 				}
 				
