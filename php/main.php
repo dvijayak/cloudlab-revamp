@@ -5,7 +5,6 @@
      
     $main = new Main();       
     
-    $output = array();
     // If user is validly logged in already, carry on
     if ($main->validateSession()) {
         // Logging out
@@ -89,6 +88,7 @@
     }
     
     echo $output;
+
 ?>
 
 <?php
@@ -116,6 +116,10 @@
             // Allocate the DBManager
             require_once ($this->paths->php . "DBManager.php");
             $this->dbm = new DBManager();
+        }
+        
+        public function __destruct () {
+            $this->dbm->close();
         }
         
         /**
