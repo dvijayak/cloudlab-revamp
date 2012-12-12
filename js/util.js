@@ -38,13 +38,22 @@ function Util () {
     }
     
     // Validates the session and then optionally performs a given AJAX task (with optional input data) to the same server
-    this.validateSession = function (task, data) {        
+    this.validateSession = function (task, taskData) {        
         $.post(Util.ajax.url,
-               data,
+               "validate=true",
                function (output) {                    
                     // Ensure that the user is logged in
                     if (output.status == "OK") {
                         /* Perform default operations */
+                        
+                        // Bind onclick events to the Back and Logout buttons
+                        $( "#header #back" ).click(function () {
+                            window.location.href=document.referrer;
+                        });
+                        
+                        $( "#header #logout" ).click(function () {
+                            Util.logout();
+                        });
                         
 						// Personalize page
 						var cookies = Util.cookiesToArray();
@@ -52,7 +61,7 @@ function Util () {
                         
                         // Perform the additional AJAX task only if it was specified
                         if (task !== undefined) {                                                    
-                            $.post(Util.ajax.url, data, task, Util.ajax.dataType);                                                           
+                            $.post(Util.ajax.url, taskData, task, Util.ajax.dataType);                                                           
                         }                    
                     }
                     // Incorrect login credentials
@@ -62,6 +71,20 @@ function Util () {
                     }
                 },
                Util.ajax.dataType);
+    }
+    
+    // Log out of the current session    
+    this.logout = function () {
+        var data = "logout=true",
+            success = function (output) {                                    
+                if (output.status == "LOGOUT") {
+                    // Avoid an infinite loop by ensuring the user is not redirected to the same page
+                    if (window.location.pathname.search("index.html") == -1) {
+                        window.location.href = "index.html";
+                    }
+                }
+            };  
+        $.post(Util.ajax.url, data, success, Util.ajax.dataType);
     }
     
 }

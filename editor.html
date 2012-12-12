@@ -5,18 +5,32 @@
 		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
 		<title>Cloud Lab: Code Editor</title>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>		
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script src="js/util.js"></script>
+		<script>
+			//var data = "course=" + document.URL.split("=")[1] + "&project=" + document.URL.split("=")[2] + "&getFiles=true";
+			var data = document.URL.split("?")[1] + "&getFiles=true";
+			Util.validateSession(function (output) {
+				// Hide toolbar if Instructor
+				if (output.data.role != "1") {
+					$( "#editor_toolbar" ).hide();
+				}	
+				
+				// Generate list of files for the chosen project
+
+			}, data);			
+		</script>
 	</head>
 	
 	<body>						
-		<script>
+		<!--<script>
 			$(document).ready(function () {				
 				// Ensure that the user is logged in				
 				var url = "http://localhost/cloudlab_revamp/php/main.php",				
 					//data = "course=" + document.URL.split("=")[1] + "&project=" + document.URL.split("=")[2] + "&getFiles=true",
 					data = document.URL.split("?")[1] + "&getFiles=true",
 					success = function (data) {
-						alert(data);
+						alert(output);
 						var output = $.parseJSON(data);
 						if (output.status == "OK") {
 							$( "#header_username" ).text(output.data.firstname);
@@ -36,34 +50,13 @@
 					dataType = "text";						
 				$.post(url, data, success, dataType);				
 			});
-		</script>
+		</script>-->
 		
-		<div id="header">
-			<script>
-				$(function () {
-					$( "#header button" ).click(function () {
-						var url = "http://localhost/cloudlab_revamp/php/main.php",
-							data = "logout=true",
-							success = function (data) {
-								var output = $.parseJSON(data);
-								if (output.status == "LOGOUT") {									
-									window.location.href = "index.html";
-								}
-							},
-							dataType = "text";						
-						$.post(url, data, success, dataType);
-					});
-					
-					$( "#backButton" ).click(function () {
-						window.location.href=document.referrer;
-					});					
-				});
-			</script>			
-			<a href="">Back</a> <!-- TODO: Add a back arrow image -->
+		<div id="header">			
+			<button id="back">Back</button <!-- TODO: Add a back arrow image -->
 			<span>Choose Course</span>
-			<span id="header_username"></span>	
-			<!--<a>Logout</a>				-->
-			<button>Logout</button>			
+			<span id="header_username"></span>				
+			<button id="logout">Logout</button>			
 		</div>
 				
 		<!-- Only viewable by students -->
