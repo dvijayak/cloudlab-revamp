@@ -39,20 +39,20 @@ function Util () {
     
     // Validates the session and then optionally performs a given AJAX task (with optional input data) to the same server
     this.validateSession = function (task, data) {        
-        $.post(this.ajax.url,
-               function (output) {
+        $.post(Util.ajax.url,
+               data,
+               function (output) {                    
                     // Ensure that the user is logged in
-                    if (output.status == "OK") {                    
-                        var cookies = this.cookiesToArray();
+                    if (output.status == "OK") {
+                        /* Perform default operations */
                         
-                        // Performs the AJAX task only if it was specified
-                        if (task !== undefined) {
-                            if (data !== undefined) {
-                                $.post(this.ajax.url, data, task, this.ajax.dataType);   
-                            }
-                            else {
-                                $.post(this.ajax.url, task, this.ajax.dataType);
-                            }
+						// Personalize page
+						var cookies = Util.cookiesToArray();
+						$( "#header_username" ).text(cookies['firstname']);
+                        
+                        // Perform the additional AJAX task only if it was specified
+                        if (task !== undefined) {                                                    
+                            $.post(Util.ajax.url, data, task, Util.ajax.dataType);                                                           
                         }                    
                     }
                     // Incorrect login credentials
@@ -61,7 +61,7 @@ function Util () {
                         window.location.href = "index.html";							
                     }
                 },
-               this.ajax.dataType);
+               Util.ajax.dataType);
     }
     
 }
