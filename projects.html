@@ -8,7 +8,9 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>
 		<script>
-			var data = document.URL.split("?")[1] + "&getProjects=true";
+			//var data = document.URL.split("?")[1] + "&getProjects=true";
+			var cookies = Util.cookiesToArray();
+			var data = "course=" + cookies['course'] + "&getProjects=true";
 			Util.validateSession(function (output) {
 				// Hide toolbar if Student
 				var cookies = Util.cookiesToArray();
@@ -37,8 +39,10 @@
 
 		<div id="header">
 			<script>
-				$(function () {					
-					$( "#header_title" ).text(document.URL.split("=")[1].toUpperCase() + ": Choose Project");
+				$(function () {
+					var cookies = Util.cookiesToArray();
+					//var data = "course=" + cookies['course'] + "&getProjects=true";
+					$( "#header_title" ).text(cookies['course'].toUpperCase() + ": Choose Project");
 				});
 			</script>			
 			<button id="back">Back</button> <!-- TODO: Add a back arrow image -->

@@ -19,9 +19,14 @@
 							// Create the UI elements
 							/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
 							 * Otherwise, courses[i] would take the value of undefined
-							 */								
+							 */
 							$( "<li><a href='#'>" + courses[i].toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
-								window.location.href = "projects.html?course=" + event.data.course;
+								var data = "course=" + event.data.course;								
+								$.post(Util.ajax.url, data, function (output) {									
+									if (output.status == "OK") {										
+										window.location.href="projects.html";
+									}
+								}, Util.ajax.dataType);								
 							}).appendTo( "#courses_listOfCourses" );
 						}
 					}, data);				

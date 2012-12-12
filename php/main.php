@@ -3,10 +3,7 @@
     error_reporting(E_ALL ^ E_NOTICE);
     //error_reporting(-1);         
      
-    $main = new Main();
-    
-    $postKeys = array_keys($_POST);
-    $cookieKeys = array_keys($_COOKIE);
+    $main = new Main();    
     
     /* Log out the incoming connection's session if requested
      * Note: there does not have to be a valid session to log out
@@ -44,71 +41,26 @@
                     "filess" => ($files == null) ? array() : $files
                 ));            
                 
-            }        
+            }
+            // Store the user's selected course in a cookie (overwrite)
+            else if (!empty($_POST['course'])) {
+                setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
+                $output = $main->buildResponse("OK");
+            }
+            // Store the user's selected project in a cookie (overwrite)
+            else if (!empty($_POST['project'])) {
+                setcookie('project', $_POST['project'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
+                $output = $main->buildResponse("OK");
+            }
+            // Store the user's selected file in a cookie (overwrite)
+            else if (!empty($_POST['file'])) {
+                setcookie('file', $_POST['file'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
+                $output = $main->buildResponse("OK");
+            }
             // Default response: simply inform the client that the user is logged in
             else if (!empty($_POST['validate'])) {                
                 $output = $main->buildResponse("OK");            
-            }        
-            
-            //// Loop through the post keys and handle the request accordingly
-            //foreach ($postKeys as $post) {
-            //                
-            //    // Get the list of courses for the user
-            //    if ($post == 'getCourses') {
-            //        $username = $_COOKIE['username'];
-            //        $firstname = $_COOKIE['firstname'];
-            //        $courses = $main->getCourses();            
-            //        $output = $main->buildResponse("OK", array(
-            //            "username" => $username,
-            //            "firstname" => $firstname,
-            //            "courses" => ($courses == null) ? array() : $courses
-            //        ));
-            //    }
-            //    // Get the list of projects for the chosen course
-            //    else if ($post == 'getProjects') {                        
-            //        $username = $_COOKIE['username'];
-            //        $firstname = $_COOKIE['firstname'];
-            //        $role = $_COOKIE['role'];
-            //        $course = $_POST['course'];
-            //        $projects = $main->getProjects($course);
-            //        $output = $main->buildResponse("OK", array(
-            //            "username" => $username,
-            //            "firstname" => $firstname,
-            //            "role" => $role,
-            //            "course" => $course,
-            //            "projects" => ($projects == null) ? array() : $projects
-            //        ));            
-            //        
-            //    }
-            //    // Get the list of files for the chosen project
-            //    else if ($post == 'getFiles') {                        
-            //        $username = $_COOKIE['username'];
-            //        $firstname = $_COOKIE['firstname'];
-            //        $role = $_COOKIE['role'];
-            //        $course = $_POST['course'];
-            //        $project = $_POST['project'];            
-            //        $output = $main->buildResponse("OK", array(
-            //            "username" => $username,
-            //            "firstname" => $firstname,
-            //            "role" => $role,
-            //            "course" => $course,
-            //            "project" => $project,
-            //            "filess" => ($files == null) ? array() : $files
-            //        ));            
-            //        
-            //    }        
-            //    // Default response: simply inform the client that the user is logged in
-            //    else if ($post == 'validate') {
-            //        // Send some personalized data
-            //        $username = $_COOKIE['username'];
-            //        $firstname = $_COOKIE['firstname'];
-            //        $output = $main->buildResponse("OK", array(
-            //            "username" => $username,
-            //            "firstname" => $firstname               
-            //        ));            
-            //    }
-            //    
-            //}            
+            }                
         }
         // Else, authenticate the user
         else {
