@@ -23,7 +23,8 @@
 			<script>
 				$(function () {
 					$( "#loginButton" ).click(function () {
-						var url = "http://localhost/cloudlab_revamp/php/main.php",
+						//var url = "http://localhost/cloudlab_revamp/php/main.php",
+						var url = Util.urls.php.main,
 							data = "username=" + $( "#userText" ).val() + "&password=" + CryptoJS.MD5($( "#passText" ).val()),
 							success = function (output) {								
 								if (output.status == "OK") {
