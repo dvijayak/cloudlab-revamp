@@ -2,21 +2,21 @@ function Util () {
     
     console.log("Created the Util object");
 
-    /* Fields */
+    /* Fields */    
     
     // URIs/URLs to important internal and external resources    
     this.paths = new Array();
     this.paths.protocol = "http://";
     this.paths.domain = "localhost";
-    this.paths.root = "/cloudlab_revamp/";
-    this.paths.img = "img/";
-    this.paths.js = "js/";
-    this.paths.php = "php/";
+    this.paths.root = "/cloudlab_revamp";
+    this.paths.img = "/img";
+    this.paths.js = "/js";
+    this.paths.php = "/php";
     
     this.urls = new Array();    
     this.urls.server = this.paths.protocol + this.paths.domain + this.paths.root;
     this.urls.php = new Array();
-    this.urls.php.main = this.urls.server + this.paths.php + "main.php";
+    this.urls.php.main = this.urls.server + this.paths.php + "/main.php";
     
     // Pre-configured AJAX settings
     this.ajax = new Array();

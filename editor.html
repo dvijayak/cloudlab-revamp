@@ -8,8 +8,8 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>
 		<script>
-			//var data = "course=" + document.URL.split("=")[1] + "&project=" + document.URL.split("=")[2] + "&getFiles=true";
-			var data = document.URL.split("?")[1] + "&getFiles=true";
+			var cookies = Util.cookiesToArray();			
+			var data = "project=" + cookies['project'] + "&getFiles=true";
 			Util.validateSession(function (output) {
 				// Hide toolbar if Instructor
 				var cookies = Util.cookiesToArray();
@@ -18,16 +18,36 @@
 				}	
 				
 				// Generate list of files for the chosen project
-
+				//Util.populateBrowser
+				var files = output.data.files;
+				var nFiles = files.length;
+				for (var i = 0; i < nFiles; i++) {
+					// Create the UI elements
+					/* Note: by passing a data map to the click handler, we preserve the value of files[i].
+					 * Otherwise, files[i] would take the value of undefined
+					 */
+					// Clicking on a files loads the files contents on to the editor
+					$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+						// Wrap the text in a <pre> tag to preserve code style and newline/carriage returns
+						var code = $( "<pre></pre>" ).html(event.data.file['contents']);
+						$( "#file_editor" ).html(code);					
+					}).appendTo( "#editor_listOfFiles" );
+				}
 			}, data);			
 		</script>
 	</head>
 	
 	<body>						
 		
-		<div id="header">			
-			<button id="back">Back</button <!-- TODO: Add a back arrow image -->
-			<span>Choose Course</span>
+		<div id="header">
+			<script>
+				$(function () {
+					var cookies = Util.cookiesToArray();					
+					$( "#header_title" ).text(cookies['course'].toUpperCase() + ": " + cookies['project'].toUpperCase());
+				});
+			</script>				
+			<button id="back">Back</button <!-- TODO: Add a back arrow image -->			
+			<span id="header_title"></span>
 			<span id="header_username"></span>				
 			<button id="logout">Logout</button>			
 		</div>
@@ -39,10 +59,13 @@
 					//$( "#editor_toolbar" ).menu();
 				});
 			</script>
-			<li><a href="">New</a></li>
-			<li><a href="">Delete</a></li>						
-			<li><a href="">Submit</a></li>
-			<li><a href="">Preferences</a></li>
+			<li><a href="#">New</a></li>			
+			<li><a id="compile" href="#">Compile</a></li>			
+			<li><a id="run" href="#">Run</a></li>
+			<li><a href="#">Compile & Run</a></li>
+			<li><a href="#">Delete</a></li>
+			<li><a href="#">Submit</a></li>
+			<li><a href="#">Preferences</a></li>			
 		</ul>		
 		
 		<fieldset>

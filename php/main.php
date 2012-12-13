@@ -17,31 +17,55 @@
             // Get the list of courses for the user
             if (!empty($_POST['getCourses'])) {                
                 $courses = $main->getCourses();            
-                $output = $main->buildResponse("OK", array(                    
-                    "courses" => ($courses == null) ? array() : $courses
-                ));
+                //$output = $main->buildResponse("OK", array(                    
+                //    "courses" => ($courses == null) ? array() : $courses
+                //));
+                if ($courses == null) {
+                    $output = $main->buildResponse("ZERO_RESULTS");    
+                }
+                else {                    
+                    $output = $main->buildResponse("OK", array(                                    
+                        "courses" => $courses
+                    ));
+                }
             }
             // Get the list of projects for the chosen course
             else if (!empty($_POST['getProjects'])) {                                        
                 $course = $_POST['course'];
                 $projects = $main->getProjects($course);
-                $output = $main->buildResponse("OK", array(                    
-                    "course" => $course,
-                    "projects" => ($projects == null) ? array() : $projects
-                ));            
+                //$output = $main->buildResponse("OK", array(                                        
+                //    "projects" => ($projects == null) ? array() : $projects
+                //));
+                if ($projects == null) {
+                    $output = $main->buildResponse("ZERO_RESULTS");    
+                }
+                else {                    
+                    $output = $main->buildResponse("OK", array(                                    
+                        "projects" => $projects
+                    ));
+                }
                 
             }
             // Get the list of files for the chosen project
-            else if (!empty($_POST['getFiles'])) {                                        
-                $course = $_POST['course'];
-                $project = $_POST['project'];            
-                $output = $main->buildResponse("OK", array(                    
-                    "course" => $course,
-                    "project" => $project,
-                    "filess" => ($files == null) ? array() : $files
-                ));            
+            else if (!empty($_POST['getFiles'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_POST['project'];
+                $files = $main->getFiles($user, $course, $project);
+                if ($files == null) {
+                    $output = $main->buildResponse("ZERO_RESULTS");    
+                }
+                else {                    
+                    $output = $main->buildResponse("OK", array(                                    
+                        "files" => $files
+                    ));
+                }
                 
             }
+            //else if (!empty($_POST['getContents'])) {
+            //    $name = $_POST['file'];
+            //    $ext = $_POST['ext'];
+            //}
             // Store the user's selected course in a cookie (overwrite)
             else if (!empty($_POST['course'])) {
                 setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
@@ -277,23 +301,37 @@
         /**
          * Retrieve the list of files for the chosen project
          */
-        public function getFiles ($course, $project) {
+        public function getFiles ($username, $course, $project) {
+            $username = mysql_real_escape_string($username);
             $course = mysql_real_escape_string($course);
             $project = mysql_real_escape_string($project);
-            $query = "SELECT project_name AS project FROM Projects WHERE course_id='" . $course . "'";
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Retrieve the list of files for the given project id which is owned by the given user
+            $query = "SELECT Enrollments.course_id, Projects.project_name, Files.*" .
+            " FROM Enrollments, Projects, Files WHERE Files.file_owner = '" . $username . // Note that each new line continuation begins with a space
+            "' AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
+            " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";
+            
             if (($result = $this->dbm->query($query)) == null) {                
                 return null;
             }
             else {                
                 if (mysql_num_rows($result) == 0) {                    
-                    $projects = null;
+                    $files = null;
                 }
                 // Iterate as long as we have rows in the result set  
-                $projects = array();
+                $files = array();
                 while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($projects, $row['project']);
+                    array_push($files, array(
+                        "name" => $row['file_name'],
+                        "ext" => $row['file_ext'],
+                        "contents" => $row['file_data'],
+                        "compile_dump" => $row['file_compiled_output'],
+                        "output" => $row['file_compiled_data'] // TODO: Need to change the DB column for this one
+                    ));
                 }                
-                return $projects;
+                return $files;
             }        
         }        
         
