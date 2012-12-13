@@ -1,10 +1,19 @@
-var http = require("http");
+var express = require('express');
+var server = express();
 
-var server = http.createServer(function(request, response) {
-	response.writeHead(200, {"Content-Type": "text/plain"});
-	response.write("Hello World");
-	response.end();
+server.get('/', function (req, res) {
+	
+	res.json(200, {
+		host: req.host,
+		status: "All tings irie"
+	});	
 });
+
+server.post('/', function (req, res) {	
+	username = req.body.username || 'Anonymous';
+});
+
+
 server.listen(8000);
 
 //var net = require('net');

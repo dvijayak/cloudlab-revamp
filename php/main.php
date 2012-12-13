@@ -62,10 +62,6 @@
                 }
                 
             }
-            //else if (!empty($_POST['getContents'])) {
-            //    $name = $_POST['file'];
-            //    $ext = $_POST['ext'];
-            //}
             // Store the user's selected course in a cookie (overwrite)
             else if (!empty($_POST['course'])) {
                 setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
@@ -82,8 +78,8 @@
                 $output = $main->buildResponse("OK");
             }
             // Default response: simply inform the client that the user is logged in
-            else if (!empty($_POST['validate'])) {                
-                $output = $main->buildResponse("OK");            
+            else if (!empty($_POST['validate'])) {                 
+                $output = $main->buildResponse("OK");
             }                
         }
         // Else, authenticate the user
@@ -93,8 +89,8 @@
                 $output = $main->buildResponse("INTRUDER");            
             }
             // Authentication succeeded!
-            else {                
-                $output = $main->buildResponse("OK");            
+            else {                                
+                $output = $main->buildResponse("OK");
             }
         }
     }
