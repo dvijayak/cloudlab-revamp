@@ -7,7 +7,7 @@ function Util () {
     // URIs/URLs to important internal and external resources    
     this.paths = new Array();
     this.paths.protocol = "http://";
-    this.paths.domain = "localhost";
+    this.paths.domain = "23.21.85.72";
     this.paths.root = "/cloudlab_revamp";
     this.paths.img = "/img";
     this.paths.js = "/js";
