@@ -8,6 +8,8 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>		
 		<script>
+			// Document scope: Keep track of the file that was clicked
+			var clickedFile;
 			var cookies = Util.cookiesToArray();			
 			var data = "project=" + cookies['project'] + "&getFiles=true";
 			Util.validateSession(function (output) {
@@ -28,17 +30,21 @@
 					 */
 					// Clicking on a files loads the files contents on to the editor
 					$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
-						//// Wrap the text in a <pre> tag to preserve code style and newline/carriage returns
-						//var code = $( "<pre></pre>" ).html(event.data.file['contents']);
-						//$( "#file_editor" ).html(code);
-						editor.setValue(event.data.file['contents']);						
+						// Update the text of the editor element
+						editor.setValue(event.data.file['contents']);
+						// Keep track of the file that was clicked
+						clickedFile = {
+							"name" : event.data.file['name'],
+							"ext" : event.data.file['ext']
+						}
+						console.log(clickedFile);
 					}).appendTo( "#editor_listOfFiles" );
 				}
 			}, data);			
 		</script>
 		<style>
 			
-			html, body { padding: 0; margin: 0; width: 100%; height: 100%; }
+			html, body { /*padding: 0; margin: 0; */width: 100%; height: 100%; }
 			
 			/* Get a child container to fill up a parent container
 			 * (Got this to work after hours of pulling hair out of my head)
@@ -127,149 +133,65 @@
 			<!-- A (currently) non-interactive terminal for displaying compiler and run-time output -->
 			<!-- TODO: Embed Ace Editor here -->
 			<div id="terminal">
-				<!--<iframe width=100% height=100% src="http://23.21.85.72:8000"></iframe>-->
-				<div id="cursors">
-							<!-- The mouse pointers will be created here -->
-						</div>
+
+				<!-- socket.io.js is served by node.js -->
+				<script src="http://localhost:8000/socket.io/socket.io.js"></script>						
+				<script>
+					$(function () {
+													
+						var url = Util.urls.node;							
 				
-						<hgroup id="instructions">
-							<h1>Draw anywhere!</h1>
-							<h2>You will see everyone else who's doing the same.</h2>
-							<h3>Tip: if the stage gets dirty, simply reload the page</h3>
-						</hgroup>        
+						// Generate an unique ID
+						var id = Math.round($.now()*Math.random());
+											
+						var socket = io.connect(url);
 						
-						<canvas id="paper" width="190" height="100">
-							Your browser needs to support canvas for this to work!
-						</canvas>
-				
-						<!-- socket.io.js is served by node.js -->
-						<script src="http://localhost:8000/socket.io/socket.io.js"></script>						
-						<script>
-							$(function(){
-							
-								// This demo depends on the canvas element
-								if(!('getContext' in document.createElement('canvas'))){
-									alert('Sorry, it looks like your browser does not sup port canvas!');
-									return false;
-								}
-															
-								var url = Util.urls.node;
-							
-								var doc = $(document),
-									win = $(window),
-									canvas = $('#paper'),
-									ctx = canvas[0].getContext('2d'),
-									instructions = $('#instructions');
-							
-								// Generate an unique ID
-								var id = Math.round($.now()*Math.random());
-							
-								// A flag for drawing activity
-								var drawing = false;
-							
-								var clients = {};
-								var cursors = {};
-							
-								var socket = io.connect(url);
-							
-								socket.on('moving', function (data) {
-							
-									if(! (data.id in clients)){
-										// a new user has come online. create a cursor for them
-										cursors[data.id] = $('<div class="cursor">').appendTo('#cursors');
-									}
-							
-									// Move the mouse pointer
-									cursors[data.id].css({
-										'left' : data.x,
-										'top' : data.y
-									});
-							
-									// Is the user drawing?
-									if(data.drawing && clients[data.id]){
-							
-										// Draw a line on the canvas. clients[data.id] holds
-										// the previous position of this user's mouse pointer
-							
-										drawLine(clients[data.id].x, clients[data.id].y, data.x, data.y);
-									}
-							
-									// Saving the current client state
-									clients[data.id] = data;
-									clients[data.id].updated = $.now();
-								});
-							
-								var prev = {};
-								
-								$( "#compile" ).click(function() {									
-									socket.emit('disconnect', function(){console.log("Disconnecting...");});
-								});
-							
-								canvas.on('mousedown',function(e){
-									e.preventDefault();
-									drawing = true;
-									prev.x = e.pageX;
-									prev.y = e.pageY;
-							
-									// Hide the instructions
-									instructions.fadeOut();
-								});
-							
-								doc.bind('mouseup mouseleave',function(){
-									drawing = false;
-								});
-							
-								var lastEmit = $.now();
-							
-								doc.on('mousemove',function(e){
-									if($.now() - lastEmit > 30){
-										socket.emit('mousemove',{
-											'x': e.pageX,
-											'y': e.pageY,
-											'drawing': drawing,
-											'id': id
-										});
-										lastEmit = $.now();
-									}
-							
-									// Draw a line for the current user's movement, as it is
-									// not received in the socket.on('moving') event above
-							
-									if(drawing){
-							
-										drawLine(prev.x, prev.y, e.pageX, e.pageY);
-							
-										prev.x = e.pageX;
-										prev.y = e.pageY;
-									}
-								});
-							
-								// Remove inactive clients after 10 seconds of inactivity
-								setInterval(function(){
-							
-									for(ident in clients){
-										if($.now() - clients[ident].updated > 10000){
-							
-											// Last update was more than 10 seconds ago.
-											// This user has probably closed the page
-							
-											cursors[ident].remove();
-											delete clients[ident];
-											delete cursors[ident];
-										}
-									}
-							
-								},10000);
-							
-								function drawLine(fromx, fromy, tox, toy){
-									ctx.moveTo(fromx, fromy);
-									ctx.lineTo(tox, toy);
-									ctx.stroke();
-								}
-							
-							});            
-						</script>				
+						$( "#compile" ).click(function() {									
+							var cookies = Util.cookiesToArray();									
+							var data = {
+								"user" : cookies['username'],
+								"name" : clickedFile['name'],
+								"ext" : clickedFile['ext'],
+								"contents" : editor.getValue()									
+							};
+							console.log(data);
+							socket.emit('compile', JSON.stringify(data)); // Convert the data to valid JSON prior to emission
+						});
+						
+						$( "#run" ).click(function() {
+							var cookies = Util.cookiesToArray();									
+							var data = {
+								"user" : cookies['username'],
+								"name" : clickedFile['name'],
+								"ext" : clickedFile['ext']														
+							};
+							console.log(data);
+							socket.emit('run', JSON.stringify(data)); // Convert the data to valid JSON prior to emission
+						});
+						
+						socket.on('compileoutput', function (data) {							
+							$( "#terminal" ).append($( "<pre>" +
+								"Compiler output:\n" +
+								data + "\n===================\n</pre>" ));
+						});
+						
+						socket.on('runoutput', function(jsonData) {
+							var data = JSON.parse(jsonData);							
+							$( "#terminal" ).append($( "<pre>" +
+								"Runtime output:\n" +
+								data.stderr + "\n\nProgram output:\n" +
+								data.stdout + "\n===================\n</pre>" ));
+						})
+					
+					});            
+				</script>				
 			</div>
+			<button id="clear">Clear</button>
+			<script>
+				$( "#clear" ).click(function () {
+					$( "#terminal" ).empty();
+				});
+			</script>
 		</fieldset>
 		<script src="http://localhost:8000/socket.io/socket.io.js"></script>
 		

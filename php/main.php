@@ -79,7 +79,7 @@
             }
             // Default response: simply inform the client that the user is logged in
             else if (!empty($_POST['validate'])) {                 
-                $output = $main->buildResponse("OK");
+                $output = $main->buildResponse("OK", $_COOKIE);
             }                
         }
         // Else, authenticate the user
@@ -177,7 +177,7 @@
             $keys = array_keys($details);            
             foreach ($keys as $key) {
                 setcookie($key, $details[$key], time()+3600, $this->paths->serverRoot, $this->paths->domain);
-                $this->userData[$key] = $details[$key];
+                //$this->userData[$key] = $details[$key];
             }
         }
         
