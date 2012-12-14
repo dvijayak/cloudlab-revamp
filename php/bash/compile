@@ -1,5 +1,0 @@
-#!/bin/bash
-
-GCC='which gcc' # Retrieve the path to gcc
-output = `ls`
-echo $output

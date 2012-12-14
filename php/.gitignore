@@ -1,0 +1,7 @@
+compile/*
+compile.php
+compile_manager.php
+FileManager.php
+CourseManager.php
+ProjectManager.php
+

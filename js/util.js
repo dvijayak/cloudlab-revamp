@@ -12,17 +12,21 @@ function Util () {
     this.paths.img = "/img";
     this.paths.js = "/js";
     this.paths.php = "/php";
+    this.paths.node = new Array();
+    this.paths.node.server = "/compile";
+    this.paths.node.port = "8000";
     
     this.urls = new Array();    
     this.urls.server = this.paths.protocol + this.paths.domain + this.paths.root;
     this.urls.php = new Array();
     this.urls.php.main = this.urls.server + this.paths.php + "/main.php";
+    this.urls.node = this.paths.protocol + this.paths.domain + ":" + this.paths.node.port;    
     
     // Pre-configured AJAX settings
     this.ajax = new Array();
     this.ajax.url = this.urls.php.main;
     this.ajax.dataType = "json";    
-
+        
     /* Methods */
     
     this.cookiesToArray = function () {
