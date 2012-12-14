@@ -108,7 +108,7 @@
         
         private $userData = null;
         
-        public function __construct ($root = "/home/pilgrim/private_html/cloudlab_revamp/") {
+        public function __construct ($root = "/home/cloudlab/public_html/cloudlab_revamp/") {
             $this->paths = new stdClass();
             $this->paths->root = $root;
             $this->paths->php = $this->paths->root . "php/";

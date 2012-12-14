@@ -67,6 +67,11 @@
             }
 			
 			/* ========================================================== */
+
+			#terminal {
+				background-color: black;
+				color: white;
+			}
 		</style>
 	</head>
 	
@@ -132,9 +137,7 @@
 			<!-- A (currently) non-interactive terminal for displaying compiler and run-time output -->
 			<!-- TODO: Embed Ace Editor here -->
 			<div id="terminal">
-
-				<!-- socket.io.js is served by node.js -->
-				<script src="http://localhost:8000/socket.io/socket.io.js"></script>						
+					
 				<script>
 					$(function () {
 													
@@ -192,6 +195,7 @@
 				});
 			</script>
 		</fieldset>
+		<!-- socket.io.js for the clientside is served by the node.js server itself -->
 		<script src="http://23.21.85.72:8000/socket.io/socket.io.js"></script>
 		
 	</body>	
