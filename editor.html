@@ -6,7 +6,7 @@
 		<title>Cloud Lab: Code Editor</title>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-		<script src="js/util.js"></script>
+		<script src="js/util.js"></script>		
 		<script>
 			var cookies = Util.cookiesToArray();			
 			var data = "project=" + cookies['project'] + "&getFiles=true";
@@ -28,13 +28,36 @@
 					 */
 					// Clicking on a files loads the files contents on to the editor
 					$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
-						// Wrap the text in a <pre> tag to preserve code style and newline/carriage returns
-						var code = $( "<pre></pre>" ).html(event.data.file['contents']);
-						$( "#file_editor" ).html(code);					
+						//// Wrap the text in a <pre> tag to preserve code style and newline/carriage returns
+						//var code = $( "<pre></pre>" ).html(event.data.file['contents']);
+						//$( "#file_editor" ).html(code);
+						editor.setValue(event.data.file['contents']);						
 					}).appendTo( "#editor_listOfFiles" );
 				}
 			}, data);			
 		</script>
+		<style>
+			
+			html, body { padding: 0; margin: 0; width: 100%; height: 100%; }
+			
+			#editor_container {
+				position: relative;				
+				height: 250px;
+			}
+			
+            #editor {
+				display: block;
+				overflow: auto;
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				padding: 0;
+				margin: 0;                
+                /*height: 500px*/
+            }  			
+		</style>
 	</head>
 	
 	<body>						
@@ -79,13 +102,20 @@
 			</div>
 		</fieldset>
 		
-		<fieldset>
-			<script src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>
+		<fieldset id="editor_container">
 			<legend>Code Editor</legend>
 			<!-- Text from the file is displayed here -->
-			<!-- TODO: Embed Ace Editor here -->
-			<div id="file_editor">
-			</div>
+			<!-- TODO: Embed Ace Editor here -->			
+			<div id="editor"></div>			
+			<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>
+			<script>
+				// Initialize the ace editor object
+				var editor = ace.edit("editor"),
+					eSession = editor.getSession();
+				editor.setTheme("ace/theme/monokai");
+				eSession.setMode("ace/mode/c_cpp");
+				editor.setValue("Welcome to your project! Select a file to edit.");
+			</script>			
 		</fieldset>
 		
 		<fieldset>
@@ -104,7 +134,7 @@
 							<h3>Tip: if the stage gets dirty, simply reload the page</h3>
 						</hgroup>        
 						
-						<canvas id="paper" width="1900" height="1000">
+						<canvas id="paper" width="190" height="100">
 							Your browser needs to support canvas for this to work!
 						</canvas>
 				
