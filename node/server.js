@@ -77,8 +77,8 @@ io.sockets.on('connection', function (socket) {
 				console.log("STDERR: " + stderror);
 				console.log("Compilation complete.");
 				
-				// Emit the compilation log to the client			
-				socket.emit('compileoutput', stderror);
+				// Emit the compilation log to the client							
+				socket.emit('output', stderror);
 			});
 						
 		});				
@@ -110,12 +110,12 @@ io.sockets.on('connection', function (socket) {
 					var output = {
 						"stdout" : stdoutput,
 						"stderr" : stderror
-					};
-					socket.emit('runoutput', JSON.stringify(output));
+					};					
+					socket.emit('output', JSON.stringify(output));
 				});
 			}
-			else {
-				socket.emit('compileoutput', "Error: attempting to execute a file that does not exist. Did you forget to first compile it?");
+			else {				
+				socket.emit('output', "Error: attempting to execute a file that does not exist. Did you forget to first compile it?");
 				console.log("Error: file does not exist!");
 			}
 		});

@@ -1,7 +1,9 @@
 <?php
 
-    error_reporting(E_ALL ^ E_NOTICE);
-    //error_reporting(-1);         
+    /* error reporting must be set at -1 during testing */
+    
+    //error_reporting(E_ALL ^ E_NOTICE);
+    error_reporting(-1);         
      
     $main = new Main();    
     
@@ -16,10 +18,7 @@
         if ($main->validateSession()) {        
             // Get the list of courses for the user
             if (!empty($_POST['getCourses'])) {                
-                $courses = $main->getCourses();            
-                //$output = $main->buildResponse("OK", array(                    
-                //    "courses" => ($courses == null) ? array() : $courses
-                //));
+                $courses = $main->getCourses();                            
                 if ($courses == null) {
                     $output = $main->buildResponse("ZERO_RESULTS");    
                 }
@@ -33,9 +32,6 @@
             else if (!empty($_POST['getProjects'])) {                                        
                 $course = $_POST['course'];
                 $projects = $main->getProjects($course);
-                //$output = $main->buildResponse("OK", array(                                        
-                //    "projects" => ($projects == null) ? array() : $projects
-                //));
                 if ($projects == null) {
                     $output = $main->buildResponse("ZERO_RESULTS");    
                 }
@@ -108,7 +104,7 @@
         
         private $userData = null;
         
-        public function __construct ($root = "/home/cloudlab/public_html/cloudlab_revamp/") {
+        public function __construct ($root = "/home/pilgrim/private_html/cloudlab_revamp/") {
             $this->paths = new stdClass();
             $this->paths->root = $root;
             $this->paths->php = $this->paths->root . "php/";
@@ -238,12 +234,7 @@
                 "status" => $status,
                 "data" => $params
             );
-       
-            //$output = array(
-            //    "status" => $status,
-            //    "data" => $_COOKIE
-            //);
-            
+
             return json_encode($output);
         }
         
