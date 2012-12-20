@@ -44,17 +44,29 @@
                     array_push($files, array(
                         "name" => $row['file_name'],
                         "ext" => $row['file_ext'],
-                        "contents" => $row['file_data'],
-                        "compile_dump" => $row['file_compiled_output'],
-                        "output" => $row['file_compiled_data'] // TODO: Need to change the DB column for this one
+                        "contents" => $row['file_data'],                                            
                     ));
                 }                
                 return $files;
             }        
         }
                 
-        public function saveFile ($username, $course, $project, $filename, $contents) {
-                        
+        public function saveFile ($username, $course, $project, $file, $contents) {
+            $username = mysql_real_escape_string($username);
+            $course = mysql_real_escape_string($course);
+            $project = mysql_real_escape_string($project);
+            $filename = mysql_real_escape_string($file['name']);
+            $fileext = mysql_real_escape_string($file['ext']);
+            $contents = mysql_real_escape_string($contents);
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Set the contents of the specified file
+            $query = "UPDATE Files SET file_data = '" . $contents .
+            "' WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
+            "' AND file_ext='" . $fileext . "' AND file_owner = '" . $username . "';";
+            
+            $success = $this->dbm->query($query);
+            return $success;
         }        
         
     //    function checkIfEdited($user, $project) {
