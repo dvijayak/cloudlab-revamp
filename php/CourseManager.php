@@ -40,12 +40,5 @@
         }		
 		
 	}
-
-	/////////////////
-	// TEST SCRIPT //
-	/////////////////
-	//require_once("DBManager.php");
-	//$cm = new CourseManager(new DBManager(), 'mdelong');
-	//var_dump($cm->getCourses());
 	
 ?>
