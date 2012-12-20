@@ -25,6 +25,20 @@ function handler (request, response) {
     });
 }
 
+function removeCompiledFiles (fullname) {
+	if (fullname !== undefined) {		
+		console.log("Deleting compiled files...");
+		var command = "rm -r " + fullname + "*"
+		var child = exec(command, function (error, stdout, stderr) {
+			var stdoutput = ((stdout) ? stdout : "No output"),
+				stderror = ((stderr) ? stderr : "No errors!");
+			console.log("STDOUT: " + stdoutput);
+			console.log("STDERR: " + stderror);
+			console.log("Successfully deleted compiled files.");
+		});
+	}
+}
+
 // Delete this row if you want to see debug messages
 io.set('log level', 1);
 
@@ -32,10 +46,27 @@ io.set('log level', 1);
 io.sockets.on('connection', function (socket) {
 
 	console.log("Socket.io Connection: " + (++nconnections));
-
-	// Compile the input file
-	//socket.on('compile', compile);
+		
 	socket.on('compile', function(input) {
+		compile(input);
+	});
+			
+	socket.on('run', function (input) {
+		run(input);		
+	});		
+	
+	socket.on('disconnect', function () {
+		console.log("Client has disconnected");
+	})
+	
+	socket.on('compilerun', function (input) {
+		compile(input, run);
+	});
+	
+	/* Inner functions */
+	
+	// Compile the input file. Accepts an optional function for running the compiled file
+	function compile (input, execute) {
 		console.log("\nReceived compile request....");
 		/* Parse the JSON output */
 		console.log("Parsing filename from JSON...");
@@ -79,16 +110,18 @@ io.sockets.on('connection', function (socket) {
 				
 				// Emit the compilation log to the client							
 				socket.emit('output', stderror);
+				
+				// If a function is provided, execute the file
+				if (execute !== undefined) {
+					run(input);
+				}
 			});
 						
-		});				
-	
-	});
+		});			
+	}
 	
 	// Execute a compiled file
-	//socket.on('run', run);
-	socket.on('run', function (input) {
-		console.log("\nReceived run request....");
+	function run (input) {
 		/* Parse the JSON output */
 		console.log("Parsing filename from JSON...");
 		var data = JSON.parse(input);
@@ -112,18 +145,15 @@ io.sockets.on('connection', function (socket) {
 						"stderr" : stderror
 					};					
 					socket.emit('output', JSON.stringify(output));
+					
+					// Remove all created compilation files
+					removeCompiledFiles(COMPILE_PATH + "/" + file);
 				});
 			}
 			else {				
 				socket.emit('output', "Error: attempting to execute a file that does not exist. Did you forget to first compile it?");
 				console.log("Error: file does not exist!");
 			}
-		});
-		
-	});	
-	
-	
-	socket.on('disconnect', function () {
-		console.log("Client has disconnected");
-	})
+		});		
+	}	
 });

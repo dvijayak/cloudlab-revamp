@@ -147,26 +147,39 @@
 									
 				var socket = io.connect(url);
 				
-				$( "#compile" ).click(function() {									
-					var cookies = Util.cookiesToArray();									
-					var data = {
-						"user" : cookies['username'],
-						"name" : clickedFile['name'],
-						"ext" : clickedFile['ext'],
-						"contents" : EM.editor.getValue()									
-					};							
-					socket.emit('compile', JSON.stringify(data)); // Convert the data to valid JSON prior to emission
+				$( "#compile" ).click(function () {					
+					var data = buildMessage(["contents"],
+											[EM.editor.getValue()]);
+					socket.emit('compile', data);
 				});
 				
-				$( "#run" ).click(function() {
-					var cookies = Util.cookiesToArray();									
+				$( "#run" ).click(function () {					
+					var data = buildMessage();
+					socket.emit('run', data);
+				});
+				
+				$( "#compilerun" ).click(function () {
+					var data = buildMessage(["contents"],
+											[EM.editor.getValue()]);
+					socket.emit('compilerun', data); 
+				});
+				
+				// Helper function for creating the data for the message to be emitted
+				function buildMessage (keys, values) {
+					var cookies = Util.cookiesToArray();
 					var data = {
 						"user" : cookies['username'],
 						"name" : clickedFile['name'],
 						"ext" : clickedFile['ext']														
-					};							
-					socket.emit('run', JSON.stringify(data)); // Convert the data to valid JSON prior to emission
-				});				
+					};
+					if (keys !== undefined && values !== undefined && keys.length == values.length) {
+						var n = keys.length;							
+						for (var i = 0; i < n; i++) {						
+							data[keys[i]] = values[i];
+						}
+					};					
+					return JSON.stringify(data); // Convert the data to valid JSON prior to emission
+				}
 				
 				socket.on('output', function(data) {
 					// If the response is valid JSON, it is runtime output
@@ -174,12 +187,12 @@
 						var jsonData = JSON.parse(data);
 						EM.appendValue("Runtime output:\n" +
 							jsonData.stderr + "\n\nProgram output:\n" +
-							jsonData.stdout + "===================\n", EM.terminal); // cursorPos: 0 or undefined is at the beginning; 1 is at the end
+							jsonData.stdout + "\n===================\n", EM.terminal); // cursorPos: 0 or undefined is at the beginning; 1 is at the end
 					}
 					// else, it is compiler output
 					catch (e) {
 						EM.appendValue("Compiler output:\n" +
-							data + "===================\n", EM.terminal); // cursorPos: same as above
+							data + "\n===================\n", EM.terminal); // cursorPos: same as above
 					}
 					
 				});
