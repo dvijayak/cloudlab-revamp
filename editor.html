@@ -39,6 +39,11 @@
 						}
 						//console.log(clickedFile);
 					}).appendTo( "#editor_listOfFiles" );
+					
+					// Load contents of the first file by default (can be changed to open last saved file via cookies, etc.)
+					if (i == 0) {
+						EM.editor.setValue(files[i]['contents'], 1);
+					}
 				}
 			}, data);			
 		</script>

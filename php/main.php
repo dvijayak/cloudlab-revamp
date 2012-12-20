@@ -3,7 +3,12 @@
     /* error reporting must be set at -1 during testing */
     
     //error_reporting(E_ALL ^ E_NOTICE);
-    error_reporting(-1);         
+    error_reporting(-1);
+    
+    // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
+    require_once("PhpConsole.php");
+    PHPConsole::start();
+    /////////////////////////////////////////////////////////////////////////
      
     $main = new Main();    
     
@@ -17,8 +22,9 @@
         // If user is validly logged in already, carry on
         if ($main->validateSession()) {        
             // Get the list of courses for the user
-            if (!empty($_POST['getCourses'])) {                
-                $courses = $main->getCourses();                            
+            if (!empty($_POST['getCourses'])) {
+                $user = $_COOKIE['username'];
+                $courses = $main->getCourseManager()->getCourses($user);
                 if ($courses == null) {
                     $output = $main->buildResponse("ZERO_RESULTS");    
                 }
@@ -30,8 +36,8 @@
             }
             // Get the list of projects for the chosen course
             else if (!empty($_POST['getProjects'])) {                                        
-                $course = $_POST['course'];
-                $projects = $main->getProjects($course);
+                $course = $_POST['course'];                
+                $projects = $main->getProjectManager()->getProjects($course);
                 if ($projects == null) {
                     $output = $main->buildResponse("ZERO_RESULTS");    
                 }
@@ -47,7 +53,7 @@
                 $user = $_COOKIE['username'];
                 $course = $_COOKIE['course'];
                 $project = $_POST['project'];
-                $files = $main->getFiles($user, $course, $project);
+                $files = $main->getFileManager()->getFiles($user, $course, $project);
                 if ($files == null) {
                     $output = $main->buildResponse("ZERO_RESULTS");    
                 }
@@ -100,7 +106,10 @@
     class Main {
         
         private $paths;        
-        private $dbm;
+        private $dbm; // Database Manager
+        private $cm;  // Course Manager
+        private $pm;  // Project Manager
+        private $fm;  // File Manager
         
         private $userData = null;
         
@@ -117,9 +126,19 @@
                                                                      */
             $this->paths->serverRoot = "/cloudlab_revamp/";
             
-            // Allocate the DBManager
+            /* Attempt to allocate all managers */
+            
             require_once ($this->paths->php . "DBManager.php");
             $this->dbm = new DBManager();
+            
+            require_once ($this->paths->php . "CourseManager.php");                    
+            $this->cm = new CourseManager($this->dbm);            
+            
+            require_once ($this->paths->php . "ProjectManager.php");            
+            $this->pm = new ProjectManager($this->dbm);
+                        
+            require_once ($this->paths->php . "FileManager.php");
+            $this->fm = new FileManager($this->dbm);
         }
         
         public function __destruct () {
@@ -149,8 +168,7 @@
                   "idnumber" => $result['user_number'],
                   "firstname" => $result['user_firstname'],
                   "lastname" => $result['user_lastname'],
-                  "email" => $result['user_email'],
-                  "course" => $result['course_id'],
+                  "email" => $result['user_email'],                  
                   "role" => $result['group_id']
                 );
                 $this->createSession($details);
@@ -215,15 +233,7 @@
             }
                                                         
             return $isLoggedIn;
-        }
-        
-        public function getPaths () {
-            return $this->paths;
-        }
-        
-        public function getTempUserData () {
-            return $this->userData;
-        }
+        }    
         
         /**
          * This method constructs a JSON response based on the input params and returns
@@ -238,88 +248,26 @@
             return json_encode($output);
         }
         
-        /**
-         * Retrieve the list of courses that the user is enrolled in
-         */
-        public function getCourses ($user) {
-            if ($user == null) {
-                $user = $_COOKIE['username'];                    
-            }
-            $user = mysql_real_escape_string($user);
-            $query = "SELECT DISTINCT Enrollments.course_id FROM Courses, Enrollments WHERE Enrollments.user_id = '" . $user . "';";                        
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $courses = null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $courses = array();
-                while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($courses, $row['course_id']);
-                }                
-                return $courses;
-            }
+        /* Accessors */
+        
+        public function getCourseManager () {
+            return $this->cm;
         }
         
-        /**
-         * Retrieve the list of projects of the chosen course
-         */
-        public function getProjects ($course) {
-            $course = mysql_real_escape_string($course);
-            $query = "SELECT project_name AS project FROM Projects WHERE course_id='" . $course . "'";
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $projects = null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $projects = array();
-                while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($projects, $row['project']);
-                }                
-                return $projects;
-            }        
+        public function getProjectManager () {
+            return $this->pm;
         }
         
-        /**
-         * Retrieve the list of files for the chosen project
-         */
-        public function getFiles ($username, $course, $project) {
-            $username = mysql_real_escape_string($username);
-            $course = mysql_real_escape_string($course);
-            $project = mysql_real_escape_string($project);
-            // Retrieve the project id for the given pair of course id and project name
-            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
-            // Retrieve the list of files for the given project id which is owned by the given user
-            $query = "SELECT Enrollments.course_id, Projects.project_name, Files.*" .
-            " FROM Enrollments, Projects, Files WHERE Files.file_owner = '" . $username . // Note that each new line continuation begins with a space
-            "' AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
-            " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";
-            
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $files = null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $files = array();
-                while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($files, array(
-                        "name" => $row['file_name'],
-                        "ext" => $row['file_ext'],
-                        "contents" => $row['file_data'],
-                        "compile_dump" => $row['file_compiled_output'],
-                        "output" => $row['file_compiled_data'] // TODO: Need to change the DB column for this one
-                    ));
-                }                
-                return $files;
-            }        
+        public function getFileManager () {
+            return $this->fm;
+        }
+        
+        public function getPaths () {
+            return $this->paths;
+        }
+        
+        public function getTempUserData () {
+            return $this->userData;
         }        
         
     }  
