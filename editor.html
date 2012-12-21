@@ -19,8 +19,7 @@
 					$( "#editor_toolbar" ).hide();
 				}	
 				
-				// Generate list of files for the chosen project
-				//Util.populateBrowser
+				// Generate list of files for the chosen project				
 				var files = output.data.files;
 				var nFiles = files.length;
 				for (var i = 0; i < nFiles; i++) {
@@ -43,6 +42,10 @@
 					// Load contents of the first file by default (can be changed to open last saved file via cookies, etc.)
 					if (i == 0) {
 						EM.editor.setValue(files[i]['contents'], 1);
+						clickedFile = {
+							"name" : files[i]['name'],
+							"ext" : files[i]['ext']
+						}
 					}
 				}
 			}, data);			
@@ -50,6 +53,12 @@
 		<style>
 			
 			html, body { padding: 0; margin: 0; width: 100%; height: 100%; }
+			
+			#statusbar {
+				color: grey;
+				text-align: center;
+				border: solid 1px;
+			}
 			
 			/* Get a child container to fill up a parent container
 			 * (Got this to work after hours of pulling hair out of my head)
@@ -103,12 +112,28 @@
 		<!-- Only viewable by students -->
 		<ul id="editor_toolbar">
 			<script>
+				function saveFile () {
+					var file = clickedFile['name'] + "." + clickedFile['ext'];
+					$( "#statusbar" ).text("Attempting to save " +  file + "...");					
+					var contents = EM.editor.getValue();
+					var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +
+						"&contents=" + contents + "&saveFile=true";
+					$.post(Util.ajax.url, data, function (output) {						
+						if (output.status == "OK") {
+							$( "#statusbar" ).text(file + " was saved successfully.");
+						}
+						else {
+							$( "#statusbar" ).text("Attempt to save " + file + " failed!");
+						}
+					}, Util.ajax.dataType);
+				}
 				$(function () {
-					//$( "#editor_toolbar" ).menu();
+					$( "#save" ).click(saveFile);
 				});
 			</script>
 			<li><a id="new" href="#">New</a></li>
 			<li><a id="save" href="#">Save</a></li>
+			<li><a id="rename" href="#">Rename</a></li>
 			<li><a id="compile" href="#">Compile</a></li>			
 			<li><a id="run" href="#">Run</a></li>
 			<li><a id="compilerun" href="#">Compile & Run</a></li>
@@ -121,15 +146,12 @@
 			<legend>Edit File</legend>
 			<!-- Dynamically populated via AWS RDS -->
 			<div id="file_browser">
-				<ul id="editor_listOfFiles">
-					<!--<li><a href="">main.c</a></li>-->
-					<!--<li><a href="">main.h</a></li>-->					
-				</ul>
+				<ul id="editor_listOfFiles"></ul>
 			</div>
 		</fieldset>
 		
-		<div id="editor_container">
-			<legend>Code Editor</legend>
+		<div id="statusbar">Ready</div>
+		<div id="editor_container">			
 			<!-- Text from the file is displayed here -->					
 			<div id="editor"></div>						
 		</div>
@@ -137,9 +159,7 @@
 		
 		<div id="terminal_container">
 			<!-- A (currently) non-interactive terminal for displaying compiler and run-time output -->
-			<div id="terminal">	
-			</div>					
-
+			<div id="terminal"></div>
 			<script type="text/javascript" src="js/editormanager.js"></script>	
 		</div>
 		<script>
@@ -152,18 +172,21 @@
 									
 				var socket = io.connect(url);
 				
-				$( "#compile" ).click(function () {					
+				$( "#compile" ).click(function () {
+					$( "#statusbar" ).text("Compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
 					var data = buildMessage(["contents"],
 											[EM.editor.getValue()]);
 					socket.emit('compile', data);
 				});
 				
-				$( "#run" ).click(function () {					
+				$( "#run" ).click(function () {
+					$( "#statusbar" ).text("Executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
 					var data = buildMessage();
 					socket.emit('run', data);
 				});
 				
 				$( "#compilerun" ).click(function () {
+					$( "#statusbar" ).text("Compiling and executing" +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
 					var data = buildMessage(["contents"],
 											[EM.editor.getValue()]);
 					socket.emit('compilerun', data); 
@@ -189,6 +212,7 @@
 				socket.on('output', function(data) {
 					// If the response is valid JSON, it is runtime output
 					try {
+						$( "#statusbar" ).text("Finished executing " +  clickedFile['name'] + "." + clickedFile['ext']);
 						var jsonData = JSON.parse(data);
 						EM.appendValue("Runtime output:\n" +
 							jsonData.stderr + "\n\nProgram output:\n" +
@@ -196,6 +220,7 @@
 					}
 					// else, it is compiler output
 					catch (e) {
+						$( "#statusbar" ).text("Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext']);
 						EM.appendValue("Compiler output:\n" +
 							data + "\n===================\n", EM.terminal); // cursorPos: same as above
 					}
@@ -212,7 +237,7 @@
 		</script>
 		
 		<!-- socket.io.js for the clientside is served by the node.js server itself -->
-		<script src="http://23.21.85.72:8000/socket.io/socket.io.js"></script>
+		<script src="http://localhost:8000/socket.io/socket.io.js"></script>
 		
 	</body>	
 </html>

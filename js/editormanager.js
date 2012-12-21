@@ -19,9 +19,22 @@ function EditorManager () {
     this.terminal.setReadOnly(true);
     this.terminal.setHighlightActiveLine(false);
     this.tRenderer.setShowGutter(false);
+    this.tRenderer.setShowPrintMargin(false);
     this.terminal.setValue("");
     
-    // Custom Editor Functions
+    
+    /* Custom key bindings */    
+    this.editor.commands.addCommand({
+        name: 'saveFile',
+        bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
+        exec: function(editor) {
+            saveFile();
+        }
+    });
+
+    
+    
+    /* Custom Editor Functions */
     
     this.appendValue = function (newValue, aceEditor) {
         var oldValue = aceEditor.getValue();
@@ -30,7 +43,7 @@ function EditorManager () {
         //oldValue += "\n";
         
         aceEditor.setValue(oldValue + newValue, 1);
-    }        
+    }
     
 }
 

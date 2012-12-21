@@ -64,6 +64,24 @@
                 }
                 
             }
+            // Save (overwrite the contents of) the specified file
+            else if (!empty($_POST['saveFile'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_COOKIE['project'];
+                $file = array(
+                    "name" => $_POST['name'],
+                    "ext" => $_POST['ext'],
+                    "contents" => $_POST['contents']
+                );                
+                $success = $main->getFileManager()->saveFile($user, $course, $project, $file);
+                if ($success) {
+                    $output = $main->buildResponse("OK");
+                }
+                else {
+                    $output = $main->buildResponse("SAVE_FAILED");
+                }
+            }
             // Store the user's selected course in a cookie (overwrite)
             else if (!empty($_POST['course'])) {
                 setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
@@ -113,7 +131,7 @@
         
         private $userData = null;
         
-        public function __construct ($root = "/home/pilgrim/private_html/cloudlab_revamp/") {
+        public function __construct ($root = "/home/pilgrim/private_html/cloudlab_revamp/") { /* TODO: Change on server */
             $this->paths = new stdClass();
             $this->paths->root = $root;
             $this->paths->php = $this->paths->root . "php/";
@@ -124,7 +142,7 @@
                                                                      * TODO: When scripts are finally hosted on a different server,
                                                                      * uncomment this expression
                                                                      */
-            $this->paths->serverRoot = "/cloudlab_revamp/";
+            $this->paths->serverRoot = "/cloudlab_revamp/"; /* TODO: Change on server */
             
             /* Attempt to allocate all managers */
             

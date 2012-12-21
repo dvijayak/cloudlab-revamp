@@ -147,7 +147,7 @@ io.sockets.on('connection', function (socket) {
 					socket.emit('output', JSON.stringify(output));
 					
 					// Remove all created compilation files
-					removeCompiledFiles(COMPILE_PATH + "/" + file);
+					//removeCompiledFiles(COMPILE_PATH + "/" + file);
 				});
 			}
 			else {				
