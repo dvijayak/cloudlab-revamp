@@ -124,7 +124,8 @@
         // Else, authenticate the user
         else {
             // Authentication failed
-            if (!($main->authenticate($_POST["username"], $_POST["password"]))) {
+            if ((empty($_POST['username']) || empty($_POST['password'])) ||
+                !($main->authenticate($_POST['username'], $_POST['password']))) {
                 $output = $main->buildResponse("INTRUDER");            
             }
             // Authentication succeeded!
@@ -188,11 +189,7 @@
         public function authenticate ($user, $pass) {            
             // Authenticate the user
             $user = mysql_real_escape_string($user);
-            $pass = mysql_real_escape_string($pass);                    
-            if ($user == null || $pass == null) {
-                $user = "mdelong";
-                $pass = md5("M");
-            }
+            $pass = mysql_real_escape_string($pass);                                
             $query = "SELECT * FROM Users WHERE user_id='" . $user . "' AND user_passhash='" . $pass . "' LIMIT 1;";                        
             if (($result = $this->dbm->queryFetchAssoc($query)) == null) {
                 return false;
