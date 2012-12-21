@@ -64,6 +64,25 @@
                 }
                 
             }
+            // Open (retrieve the contents of) the specified file
+            else if (!empty($_POST['openFile'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_COOKIE['project'];
+                $file = array(
+                    "name" => $_POST['name'],
+                    "ext" => $_POST['ext']                    
+                );
+                $contents = $main->getFileManager()->openFile($user, $course, $project, $file);
+                if ($contents == null) {
+                    $output = $main->buildResponse("ZERO_RESULTS");
+                }
+                else {
+                    $output = $main->buildResponse("OK", array(
+                       "contents" => $contents 
+                    ));
+                }
+            }
             // Save (overwrite the contents of) the specified file
             else if (!empty($_POST['saveFile'])) {
                 $user = $_COOKIE['username'];

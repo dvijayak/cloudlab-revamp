@@ -50,7 +50,35 @@
                 return $files;
             }        
         }
-                
+        
+        public function openFile ($username, $course, $project, $file) {
+            $username = mysql_real_escape_string($username);
+            $course = mysql_real_escape_string($course);
+            $project = mysql_real_escape_string($project);
+            $filename = mysql_real_escape_string($file['name']);
+            $ext = mysql_real_escape_string($file['ext']);
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Retrieve the contents of the specified file
+            $query = "SELECT file_data FROM Files" .
+            " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
+            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
+            
+            if (($result = $this->dbm->query($query)) == null) {                
+                return null;
+            }
+            else {                
+                if (mysql_num_rows($result) == 0) {                    
+                    $contents = null;
+                }
+                // Iterate as long as we have rows in the result set                  
+                while ($row = mysql_fetch_assoc($result)) {                    
+                    $contents = $row['file_data'];
+                }                
+                return $contents;
+            }
+        }
+        
         public function saveFile ($username, $course, $project, $file) {
             $username = mysql_real_escape_string($username);
             $course = mysql_real_escape_string($course);
