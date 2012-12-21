@@ -9,32 +9,44 @@
 		<script src="js/util.js"></script>		
 		<script>			
 			var clickedFile; // Document scope: Keep track of the file that was clicked
-			var cookies = Util.cookiesToArray();			
+			var cookies = Util.cookiesToArray();
+			// Ensure that the user properly lands on the page
+			if (!cookies['course']) {
+				window.location.href = "courses.html";
+			}
+			else if (!cookies['project']) {
+				window.location.href = "projects.html";
+			}
 			var data = "project=" + cookies['project'] + "&getFiles=true";
 			Util.validateSession(function (output) {
-				// Hide toolbar if Instructor
-				var cookies = Util.cookiesToArray();
-				if (cookies['role'] != "1") {	
-					$( "#editor_toolbar" ).hide();
-				}	
-				
-				// Generate list of files for the chosen project				
-				var files = output.data.files;
-				var nFiles = files.length;
-				for (var i = 0; i < nFiles; i++) {
-					// Create the UI elements
-					/* Note: by passing a data map to the click handler, we preserve the value of files[i].
-					 * Otherwise, files[i] would take the value of undefined
-					 */
-					// Clicking on a file opens it
-					$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
-						openFile(event.data.file);
-					}).appendTo( "#editor_listOfFiles" );
+				if (output.status == "OK") {
+					// Hide toolbar if Instructor
+					var cookies = Util.cookiesToArray();
+					if (cookies['role'] != "1") {	
+						$( "#editor_toolbar" ).hide();
+					}	
 					
-					// Open the first file by default (can be changed to open last saved file via cookies, etc.)
-					if (i == 0) {
-						openFile(files[i]);
+					// Generate list of files for the chosen project				
+					var files = output.data.files;
+					var nFiles = files.length;				
+					for (var i = 0; i < nFiles; i++) {
+						// Create the UI elements
+						/* Note: by passing a data map to the click handler, we preserve the value of files[i].
+						 * Otherwise, files[i] would take the value of undefined
+						 */
+						// Clicking on a file opens it
+						$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+							openFile(event.data.file);
+						}).appendTo( "#editor_listOfFiles" );
+						
+						// Open the first file by default (can be changed to open last saved file via cookies, etc.)
+						if (i == 0) {
+							openFile(files[i]);
+						}
 					}
+				}
+				else if (output.status == "ZERO_RESULTS") {
+					$( "#file_browser" ).text("There are no files for this project.");
 				}
 			}, data);
 			

@@ -9,32 +9,41 @@
 		<script src="js/util.js"></script>
 		<script>			
 			var cookies = Util.cookiesToArray();
+			// Ensure that the user properly lands on the page
+			if (!cookies['course']) {
+				window.location.href = "courses.html";
+			}
 			var data = "course=" + cookies['course'] + "&getProjects=true";
 			Util.validateSession(function (output) {
-				// Hide toolbar if Student
-				var cookies = Util.cookiesToArray();
-				if (cookies['role'] != "2") {				
-					$( "#projects_toolbar" ).hide();
+				if (output.status == "OK") {
+					// Hide toolbar if Student
+					var cookies = Util.cookiesToArray();
+					if (cookies['role'] != "2") {				
+						$( "#projects_toolbar" ).hide();
+					}
+					
+					// Generate list of projects for the chosen course
+					//Util.populateBrowser
+					var projects = output.data.projects;
+					var nProjects = projects.length;
+					for (var i = 0; i < nProjects; i++) {
+						// Create the UI elements
+						/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
+						 * Otherwise, projects[i] would take the value of undefined
+						 */
+						// Clicking on a project takes the user to the editor for the project
+						$( "<li><a href='#'>" + projects[i].toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
+							var data = "project=" + event.data.project;								
+							$.post(Util.ajax.url, data, function (output) {									
+								if (output.status == "OK") {										
+									window.location.href="editor.html";
+								}
+							}, Util.ajax.dataType);							
+						}).appendTo( "#projects_listOfProjects" );
+					}
 				}
-				
-				// Generate list of projects for the chosen course
-				//Util.populateBrowser
-				var projects = output.data.projects;
-				var nProjects = projects.length;
-				for (var i = 0; i < nProjects; i++) {
-					// Create the UI elements
-					/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
-					 * Otherwise, projects[i] would take the value of undefined
-					 */
-					// Clicking on a project takes the user to the editor for the project
-					$( "<li><a href='#'>" + projects[i].toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
-						var data = "project=" + event.data.project;								
-						$.post(Util.ajax.url, data, function (output) {									
-							if (output.status == "OK") {										
-								window.location.href="editor.html";
-							}
-						}, Util.ajax.dataType);							
-					}).appendTo( "#projects_listOfProjects" );
+				else if (output.status == "ZERO_RESULTS") {
+					$( "#project_browser" ).text("There are no projects for this course.");
 				}
 			}, data);
 		</script>
