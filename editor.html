@@ -9,25 +9,63 @@
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <script src="js/bootstrap.min.js"></script>
+		<script src="js/bootstrap-dropdown.js"></script>
+		<!-- Also, all halfing images were provided by Glyphicons @ glyphicons.com -->
         <!--------------->
         <style>
             html, body { padding: 0; margin: 0; width: 100%; height: 100%; }
+			/*body { }*/
             
-            #header {				
-                width: 100%;
-            }                                            
+			#header {
+				/*border: solid;*/
+			}
+			
+			#title {
+				font-weight: bold;				
+			}
+			
         </style>		
     </head>
     <body>
-        <div id="header" class="navbar">
-			<div class="navbar-inner pull-left">
-				<a id="back" class="btn btn-info" href="#"><i class="icon-arrow-left"> Back</i></a>
-			</div>
-			<div class="navbar-inner pull-right">
-				<a id="logout" class="btn btn-inverse" href="#">Logout</a>
+        <div id="header" class="page-header">
+			<div class="pull-left">
+				<a id="back" class="btn btn-inverse" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
+			</div>			
+			<h1 id="title">Choose Course</h1>
+			<div class="pull-right">			
 				<span id="user">Michael</span>
-				<span id="title">Choose Course</span>
+				<a id="logout" class="btn btn-link" href="#">Logout</a>								
 			</div>            
-        </div>          
+        </div>
+		<div class="navbar navbar-static-top navbar-inverse">
+			<div class="navbar-inner">
+				<ul class="nav">
+					<li><a id="new" href="#">New</a></li>
+					<li><a id="save" href="#">Save</a></li>
+					<li><a id="rename" href="#">Rename</a></li>
+					<li><a id="compile" href="#">Compile</a></li>
+					<li><a id="run" href="#">Run</a></li>
+					<li><a id="compilerun" href="#">Compile & Run</a></li>
+					<li><a id="delete" href="#">Delete</a></li>
+					<li><a id="submit" href="#">Submit</a></li>
+					<li class="dropdown">
+						<a id="preferences" href="#" class="dropdown-toggle" data-toggle="dropdown">
+							Preferences
+							<b class="caret"></b>
+						</a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+							<li><a tabindex="-1" href="#">Theme</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
     </body>
 </html>
