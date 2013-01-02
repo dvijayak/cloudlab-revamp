@@ -7,6 +7,7 @@
 		<link href="css/general.css" rel="stylesheet">
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script src="js/util.js"></script>
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <script src="js/bootstrap.min.js"></script>
@@ -15,6 +16,79 @@
 		<!-- Also, all halfing images were provided by Glyphicons @ glyphicons.com -->
         <!--------------->
         <style>
+			body { padding-top: 40px; } /* Accounts for top fixed header */
+			
+			#statusbar {								
+				text-align: center;				
+			}
+			
+
+			
+			/* Get a child container to fill up a parent container
+			 * (Got this to work after hours of pulling hair out of my head)
+			 * ========================================================== */
+			#editorContainer, #terminalContainer {
+				margin: 0;
+				padding: 0;
+				position: relative;				
+			}
+			
+			#editorContainer {
+				height: 80%;
+			}
+			
+			#terminalContainer {
+				height: 20%;
+			}
+			
+            #editor, #terminal {				
+				margin: 0;
+				padding: 0;
+				/*display: block;*/
+				/*overflow: auto;*/
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				/*width: 100%;*/				    
+                /*height: 100%*/
+				
+				
+				font-size: 16px;
+            }
+			
+			/* ========================================================== */
+
+			#terminal {
+				background-color: black;
+				color: white;
+			}
+			
+			/* Classes */
+			.normal {
+				color: gray;
+			}
+			
+			.success {
+				color: green;
+			}
+			
+			.interim {
+				color: blue;
+			}
+			
+			.warning {
+				color: orange;
+			}
+			
+			.error {
+				color: red;
+			}
+			
+			.editor {
+				height: 800px;
+			}
         </style>		
     </head>
     <body>
@@ -38,6 +112,8 @@
 				</div>
 			</div>
 		</div>
+		
+		<!-- Only viewable by students -->
 		<div id="toolbar" class="btn-toolbar">
 			<div class="btn-group">
 				<button class="btn btn-inverse">New</button>
@@ -96,5 +172,108 @@
 		<!--		</ul>-->
 		<!--	</div>-->
 		<!--</div>-->
+		
+		<div class="container-fluid" style="border: solid thin">
+			<div class="row-fluid">
+				<!-- Dynamically populated via AWS RDS -->
+				<div id="browser" class="span2">
+				</div>
+				<!-- Editor -->
+				<div class="span10">
+					<div id="statusbar" class="normal">Ready.</div>
+					<div class="editor row-fluid">
+						<div id="editorContainer">
+							<div id="editor"></div>
+						</div>
+						<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>
+						<div id="terminalContainer">
+							<div id="terminal" class="container-fluid"></div>
+							<script type="text/javascript" src="js/editormanager.js"></script>	
+						</div>			
+					</div>
+				
+				</div>
+			</div>
+		</div>								
+				
+		<script>
+			$(function () {
+											
+				var url = Util.urls.node;							
+		
+				// Generate an unique ID (might be useful for v2.0)
+				var id = Math.round($.now()*Math.random());
+									
+				var socket = io.connect(url);
+				
+				$( "#compile" ).click(function () {
+					changeStatus(StatusBarLevel.NORMAL, "Compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					var data = buildMessage(["contents"],
+											[EM.editor.getValue()]);
+					socket.emit('compile', data);
+				});
+				
+				$( "#run" ).click(function () {
+					changeStatus(StatusBarLevel.INTERIM, "Executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					var data = buildMessage();
+					socket.emit('run', data);
+				});
+				
+				$( "#compilerun" ).click(function () {
+					changeStatus(StatusBarLevel.NORMAL, "Compiling and executing" +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+					$( "#statusbar" ).text();
+					var data = buildMessage(["contents"],
+											[EM.editor.getValue()]);
+					socket.emit('compilerun', data); 
+				});
+				
+				// Helper function for creating the data for the message to be emitted
+				function buildMessage (keys, values) {
+					var cookies = Util.cookiesToArray();
+					var data = {
+						"user" : cookies['username'],
+						"name" : clickedFile['name'],
+						"ext" : clickedFile['ext']														
+					};
+					if (keys !== undefined && values !== undefined && keys.length == values.length) {
+						var n = keys.length;							
+						for (var i = 0; i < n; i++) {						
+							data[keys[i]] = values[i];
+						}
+					};					
+					return JSON.stringify(data); // Convert the data to valid JSON prior to emission
+				}
+				
+				socket.on('output', function(data) {
+					// If the response is valid JSON, it is runtime output
+					try {
+						changeStatus(StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+						var jsonData = JSON.parse(data);
+						EM.appendValue("Runtime output:\n" +
+							jsonData.stderr + "\n\nProgram output:\n" +
+							jsonData.stdout + "\n===================\n", EM.terminal); // cursorPos: 0 or undefined is at the beginning; 1 is at the end
+					}
+					// else, it is compiler output
+					catch (e) {
+						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+						$( "#statusbar" ).text("Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext']);
+						EM.appendValue("Compiler output:\n" +
+							data + "\n===================\n", EM.terminal); // cursorPos: same as above
+					}
+					
+				});
+			
+			});            
+		</script>
+		<button id="clear" class="btn">Clear</button>
+		<script>
+			$( "#clear" ).click(function () {			
+				EM.terminal.setValue("", 1);
+			});
+		</script>
+		
+		<!-- socket.io.js for the clientside is served by the node.js server itself -->
+		<script src="http://localhost:8000/socket.io/socket.io.js"></script> <!-- TODO: Change on server -->
+		
     </body>
 </html>

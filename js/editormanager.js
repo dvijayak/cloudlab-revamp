@@ -14,11 +14,11 @@ function EditorManager () {
     this.terminal = ace.edit("terminal");
     this.tSession = this.terminal.getSession();
     this.tRenderer = this.terminal.renderer;
-    this.terminal.setTheme("ace/theme/twilight");
+    this.terminal.setTheme("ace/theme/eclipse");
     this.tSession.setMode("ace/mode/text");
     this.terminal.setReadOnly(true);
     this.terminal.setHighlightActiveLine(false);
-    this.tRenderer.setShowGutter(false);
+    //this.tRenderer.setShowGutter(false);
     this.tRenderer.setShowPrintMargin(false);
     this.terminal.setValue("");
     

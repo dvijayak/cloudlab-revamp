@@ -13,6 +13,11 @@
 		<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>
         <!--------------->
         <style>
+			body { padding-top: 40px; } /* Accounts for top fixed header */
+			
+			#browser li a {
+				text-align: center;
+			}
         </style>
     </head>
 	<body>		
@@ -36,5 +41,31 @@
 				</div>
 			</div>
 		</div>
+		
+		<!-- Only viewable by instructors -->
+		<div id="toolbar" class="btn-toolbar">
+			<div class="btn-group">
+				<button class="btn btn-inverse">New</button>
+				<button class="btn btn-inverse">Edit</button>
+				<button class="btn btn-inverse">Delete</button>
+				<button class="btn btn-inverse">Upload</button>
+				<button class="btn btn-inverse">Submit</button>
+				<button class="btn btn-inverse">Distribute</button>
+			</div>
+		</div>
+		
+		<div class="container-fluid" style="border: solid thin;">
+			
+			<div class="row-fluid">
+				<div id="browser" class="span2">
+					<ul class="nav nav-list">					
+						<li><a href="#">CIS1500</a></li>
+						<li><a href="#">CIS3760</a></li>
+					</ul>	
+				</div>
+				<div id="preview" class="span10">					
+				</div>
+			</div>			
+		</div>		
 	</body>
 </html>
