@@ -1,0 +1,27 @@
+html, body { padding: 0; margin: 0; width: 100%; height: 100%; }
+/*body { padding-top: 40px; }*/
+
+#header .nav li p {
+    padding-left: 20px;
+    font-size: 30px;
+}
+
+/* Required parent of the centered element */
+.centered-container {
+	height: 100%;
+	text-align: center;
+}
+
+/* Ghost element, nudged to maintain perfect centering */
+.centered-container:before {	
+	content: '';
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
+	margin-right: -0.25em; /* Adjusts for spacing */
+}
+
+.centered {
+	display: inline-block;
+	vertical-align: middle;
+}
