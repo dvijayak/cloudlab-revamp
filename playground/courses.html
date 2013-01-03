@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
+		<title>Cloud Lab: Courses</title>
+		<link href="css/general.css" rel="stylesheet">
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script src="js/util.js"></script>
+		<script>
+			$(function () {				
+				var data = "getCourses=true";
+				// Always validate session on page load
+				Util.validateSession(function (output) {
+						if (output.status == "OK") {
+							// Generate list of courses for the user
+							var courses = output.data.courses;
+							var nCourses = courses.length;
+							for (var i = 0; i < nCourses; i++) {
+								// Create the UI elements
+								/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
+								 * Otherwise, courses[i] would take the value of undefined
+								 */
+								// Clicking on a course takes the user to the projects browser for that course
+								$( "<li><a href='#'>" + courses[i].toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
+									var data = "course=" + event.data.course;								
+									$.post(Util.ajax.url, data, function (output) {									
+										if (output.status == "OK") {										
+											window.location.href="projects.html";
+										}
+									}, Util.ajax.dataType);								
+								}).appendTo( "#browser ul" );
+							}
+						}
+						else if (output.status == "ZERO_RESULTS") {
+							$( "#browser" ).text("You have not been enrolled in any courses yet.");
+						}
+					}, data);
+				
+			});
+		</script>		
+        <!-- Bootstrap -->
+        <link href="css/bootstrap.css" rel="stylesheet">
+        <script src="js/bootstrap.min.js"></script>
+        <!--------------->
+        <style>
+			#browser {
+				height: 500px;
+				width: 500px;
+                border: 1px solid #e5e5e5;
+                -webkit-border-radius: 5px;
+                   -moz-border-radius: 5px;
+                        border-radius: 5px;
+                -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                   -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                        box-shadow: 0 1px 2px rgba(0,0,0,.05);     
+			}
+        </style>
+    </head>
+	<body>		
+		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
+			<div class="navbar-inner">
+				<div class="pull-left">
+					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
+				</div>
+				<ul class="nav">					
+					<li>
+						<p class="navbar-text">Choose Course</p>
+					</li>					
+				</ul>
+				<div class="pull-right">
+					<ul class="nav">
+						<li>
+							<p id="user" class="navbar-text"></p>
+						</li>
+					</ul>
+					<a id="logout" class="btn btn-danger" href="#">Logout</a>					
+				</div>
+			</div>			
+		</div>				
+				
+		<div class="centered-container horizontal-center">
+			<div id="browser" class="centered">
+				<h3>Select the course you would like to visit</h3>
+				<ul class="nav nav-list">
+					<!--<li class="nav-header">Select the course you would like to visit</li>-->
+				</ul>									
+			</div>
+		</div>
+	</body>
+</html>

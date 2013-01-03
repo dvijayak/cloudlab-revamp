@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
+		<title>Cloud Lab: Editor</title>		
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script src="js/util.js"></script>
+		<script>			
+			var clickedFile; // Document scope: Keep track of the file that was clicked
+			var cookies = Util.cookiesToArray();
+			// Ensure that the user properly lands on the page
+			if (!cookies['course']) {
+				window.location.href = "courses.html";
+			}
+			else if (!cookies['project']) {
+				window.location.href = "projects.html";
+			}
+			var data = "project=" + cookies['project'] + "&getFiles=true";			
+			
+			// Retrieve the current list of files for this project
+			var getFiles = function (task, empty, always) {
+				var cookies = Util.cookiesToArray();
+				// Ensure that the user properly lands on the page
+				if (!cookies['course']) {
+					window.location.href = "courses.html";
+				}
+				else if (!cookies['project']) {
+					window.location.href = "projects.html";
+				}				
+				var data = "project=" + cookies['project'] + "&getFiles=true";
+				$.post(Util.ajax.url, data, function (output) {
+					if (output.status == "OK") {
+						var files = output.data.files;
+						// Do something with the list of files
+						if (task !== undefined) {
+							task(files);
+						}
+					}
+					else if (output.status == "ZERO_RESULTS") {
+						// Do something if there are no files
+						if (empty !== undefined) {
+							empty();
+						}					
+					}
+					if (always !== undefined) {
+						// Carry out the following procedure always
+						always();
+					}
+				}, Util.ajax.dataType);												
+			}
+			
+			Util.validateSession(getFiles(function (files) {
+					// Generate list of files for the chosen project
+					var nFiles = files.length;				
+					for (var i = 0; i < nFiles; i++) {
+						// Create the UI elements
+						/* Note: by passing a data map to the click handler, we preserve the value of files[i].
+						 * Otherwise, files[i] would take the value of undefined
+						 */
+						// Clicking on a file opens it
+						$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+							openFile(event.data.file);
+						}).appendTo( "#browser ul" );
+						
+						// Open the first file by default (can be changed to open last saved file via cookies, etc.)
+						if (i == 0) {
+							openFile(files[i]);
+						}
+					}
+				}, function () {
+					$( "#browser" ).text("There are no files for this project.");
+				}, function () {
+					// Show toolbar if Student
+					var cookies = Util.cookiesToArray();
+					if (cookies['role'] == "1") {	
+						$( "#toolbar" ).slideDown('fast');					
+						$( "body" ).css('padding-top', '180px');
+						$( "#statusbar" ).css('margin-top', '120px');
+					}		
+				})
+			//Util.validateSession(function (output) {
+				//if (output.status == "OK") {					
+				//	// Generate list of files for the chosen project				
+				//	var files = output.data.files;
+				//	var nFiles = files.length;				
+				//	for (var i = 0; i < nFiles; i++) {
+				//		// Create the UI elements
+				//		/* Note: by passing a data map to the click handler, we preserve the value of files[i].
+				//		 * Otherwise, files[i] would take the value of undefined
+				//		 */
+				//		// Clicking on a file opens it
+				//		$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+				//			openFile(event.data.file);
+				//		}).appendTo( "#browser ul" );
+				//		
+				//		// Open the first file by default (can be changed to open last saved file via cookies, etc.)
+				//		if (i == 0) {
+				//			openFile(files[i]);
+				//		}
+				//	}
+				//}
+				//else if (output.status == "ZERO_RESULTS") {
+				//	$( "#browser" ).text("There are no files for this project.");			
+				//}
+							
+			/*}*/, data);
+			
+			// Open the specified file and load its contents in the editor
+			var openFile = function (file) {
+				var name = file['name'] + "." + file['ext'];
+				changeStatus(StatusBarLevel.NORMAL, "Opening " +  name + "...");				
+				
+				var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&openFile=true";
+				$.post(Util.ajax.url, data, function (output) {
+					if (output.status == "OK") {
+						// Remember the currently opened file
+						clickedFile = {
+							"name" : file['name'],
+							"ext" : file['ext']
+						};
+						EM.editor.setValue(output.data.contents, 1);																		
+						changeStatus(StatusBarLevel.SUCCESS, name + " was opened successfully.");
+					}
+					else {						
+						changeStatus(StatusBarLevel.ERROR, "Attempt to open " + name + " failed!");
+					}
+				}, Util.ajax.dataType);										
+			}
+			
+			// A mapping between human-readable status levels and their respective classes
+			var StatusBarLevel = {
+				NORMAL : "alert",
+				SUCCESS : "alert alert-success",
+				INTERIM : "alert alert-info",
+				WARNING : "alert alert-warning",
+				ERROR : "alert alert-error"
+			}
+			
+			// Changes the visual indication of the status as specified and displays the specified message in the status bar
+			var changeStatus = function (status, message) {
+				// Get all the classes that are currently attached to the element
+				var oldClasses = $( "#statusbar #status" ).attr('class');
+				// Remove the old classes and attach the new class
+				$( "#statusbar #status" ).toggleClass(oldClasses + " " + status);
+				// If a message is provided, display it
+				if (message !== undefined) {
+					$( "#statusbar #status" ).text(message);
+					// Return the status bar back to normal after 3 seconds
+					if (message != "Ready.") { // Avoids an endless recursive loop
+						setTimeout(function () {
+									changeStatus(StatusBarLevel.NORMAL, "Ready.")
+								}, 3500);
+					}
+				}				
+			}
+			
+		</script>		
+        <!-- Bootstrap -->
+        <link href="css/bootstrap.css" rel="stylesheet">
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+        <script src="js/bootstrap.min.js"></script>
+		<script src="js/bootstrap-dropdown.js"></script>
+		<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>		
+		<!-- Also, all halfing images were provided by Glyphicons @ glyphicons.com -->
+        <!--------------->
+		<link href="css/general.css" rel="stylesheet">
+        <style>
+			body { padding-top: 120px;} /* Accounts for top fixed header */
+			
+			#toolbar {
+				margin-top: 60px;
+				display: none;
+			}
+			
+			#statusbar {
+				margin-top: 60px;
+				text-align: center;
+				line-height: 60px;
+			}
+			
+			/* Get a child container to fill up a parent container
+			 * (Got this to work after hours of pulling hair out of my head)
+			 * ========================================================== */
+			#editorContainer, #terminalContainer {				
+				position: relative;				
+			}
+			
+			#editorContainer {
+				height: 100%;
+			}
+			
+			#terminalContainer {
+				height: 100%;
+			}
+			
+            #editor, #terminal {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;				
+				font-size: 16px;
+            }
+			
+			/* ========================================================== */
+
+			#terminal {
+				/*background-color: black;*/
+				/*color: white;*/
+			}
+			
+			.container-fluid {
+				/*padding: 0;*/
+			}
+			
+			.editor {
+				height:850px;
+			}
+
+        </style>		
+    </head>
+    <body>
+ 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
+			<script>
+				$(function () {
+					var cookies = Util.cookiesToArray();					
+					$( "#header #title" ).text(cookies['course'].toUpperCase() + ": " + cookies['project'].toUpperCase());
+				});
+			</script>				
+			<div class="navbar-inner">
+				<div class="pull-left">
+					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
+				</div>
+				<ul class="nav">					
+					<li>
+						<p id="title" class="navbar-text"></p>
+					</li>					
+				</ul>
+				<div class="pull-right">
+					<ul class="nav">
+						<li>
+							<p id="user" class="navbar-text"></p>
+						</li>
+					</ul>
+					<a id="logout" class="btn btn-danger" href="#">Logout</a>					
+				</div>
+			</div>
+		</div>
+		
+		<!-- Status Bar -->
+		<div id="statusbar" class="navbar navbar navbar-fixed-top">
+			<div class="navbar-inner">				
+				<span id="status" class="alert">Ready.</span>
+				<div class="pull-right">
+					<button id="clear" class="btn btn-inverse"><b>Clear Terminal</b></button>
+					<script>
+						$( "#clear" ).click(function () {			
+							EM.terminal.setValue("", 1);
+						});
+					</script>
+				</div>
+			</div>
+		</div>		
+		
+		<!-- Only viewable by students -->
+		<div id="toolbar" class="navbar navbar-fixed-top">
+			<script>
+				// Save the contents of the current file in the editor
+				function saveFile () {
+					var file = clickedFile['name'] + "." + clickedFile['ext'];
+					changeStatus(StatusBarLevel.NORMAL, "Saving " +  file + "...");
+					var contents = EM.editor.getValue();
+					var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +
+						"&contents=" + contents + "&saveFile=true";
+					$.post(Util.ajax.url, data, function (output) {						
+						if (output.status == "OK") {
+							changeStatus(StatusBarLevel.SUCCESS, file + " was saved successfully.");							
+						}
+						else {
+							changeStatus(StatusBarLevel.ERROR, "Attempt to save " + file + " failed!");							
+						}
+					}, Util.ajax.dataType);
+				}
+				$(function () {
+					$( "#save" ).click(saveFile);
+				});
+			</script>			
+			<div class="navbar-inner">
+				<script>
+					$(function () {
+						// Populate file list select elements
+						$( ".modal" ).not( "#preferencesDialog" ).on('show', function () {							
+							// get current list of files							
+							getFiles(function (files) {
+								// Reset the file select element
+								$( ".modal #filename" ).empty();
+								// Populate the file select element
+								var nFiles = files.length;
+								for (var i = 0; i < nFiles; i++) {
+									var oldfile = files[i]['name'] + "." + files[i]['ext'];
+									$( "<option value='" + oldfile + "'>" + oldfile + "</option>" ).appendTo( ".modal #filename" );	
+								}								
+							}, function () {
+								// Reset the file select element
+								$( ".modal #filename" ).empty();
+								// No files, give feedback to user
+								$( "<option value=''>None</option>" ).appendTo( ".modal #filename" );
+							}, function () {			
+							});
+						});
+						
+						$( "#newFileDialog #create" ).click(function () {
+							var name = $( "#newFileDialog #filename" ).val();
+							var ext = $( "#newFileDialog #type" ).val();
+							var file = {
+								"name" : (name) ? name : "test",
+								"ext" : ext
+							};
+							newFile(file);							
+						});
+						
+						$( "#renameFileDialog #rename" ).click(function () {
+							var oldfile = $( "#renameFileDialog #filename" ).val().split(".");
+							var newfile = $( "#renameFileDialog #newfile" ).val();							
+							renameFile({ "name" : oldfile[0], "ext" : oldfile[1] },
+									   { "name" : (newfile) ? newfile : oldfile[0], "ext" : oldfile[1] });
+						});
+						
+						$( "#deleteFileDialog #delete" ).click(function () {
+							var filename = $( "#deleteFileDialog #filename" ).val().split(".");							
+							var file = {
+								"name" : filename[0],
+								"ext" : filename[1]
+							};
+							deleteFile(file);							
+						});						
+					})
+					
+					// Reload the file browser with the latest list of files
+					var refreshFileBrowser = function () {
+						// Reset the browser
+						$( "#browser ul" ).empty();
+						// Get current list of files							
+						getFiles(function (files) {
+							// Generate list of files for the chosen project
+							var nFiles = files.length;				
+							for (var i = 0; i < nFiles; i++) {
+								// Create the UI elements
+								/* Note: by passing a data map to the click handler, we preserve the value of files[i].
+								 * Otherwise, files[i] would take the value of undefined
+								 */
+								// Clicking on a file opens it
+								$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+									openFile(event.data.file);
+								}).appendTo( "#browser ul" );
+								
+								// Open the first file by default (can be changed to open last saved file via cookies, etc.)
+								if (i == 0) {
+									openFile(files[i]);
+								}
+							}								
+						}, function () {
+							$( "#browser" ).text("There are no files for this project.");
+						});
+					}
+					
+					// Create the specified file
+					var newFile = function (file) {
+						var filename = file['name'] + "." + file['ext'];
+						changeStatus(StatusBarLevel.NORMAL, "Creating " + filename + "...");
+						var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&newFile=true";
+						
+						$.post(Util.ajax.url, data, function (output) {
+							if (output.status == "OK") {																								
+								refreshFileBrowser();								
+								changeStatus(StatusBarLevel.SUCCESS, "Created " + filename + " successfully.");
+							}
+							else {
+								changeStatus(StatusBarLevel.ERROR, "Attempt to create file " + filename + " failed!");
+							}
+						}, Util.ajax.dataType);
+					}
+					
+					// Rename the specified file
+					var renameFile = function (oldfile, newfile) {						
+						var data = "oldname=" + oldfile['name'] + "&oldext=" + oldfile['ext'] + 
+							"&newname=" + newfile['name'] + "&newext=" + newfile['ext'] +
+							"&renameFile=true";
+						changeStatus(StatusBarLevel.NORMAL, "Renaming " +  oldfile['name'] + "." + oldfile['ext'] +
+									 " to " + newfile['name'] + "." + newfile['ext'] + "...");
+						
+						$.post(Util.ajax.url, data, function (output) {
+							if (output.status == "OK") {																								
+								refreshFileBrowser();								
+								changeStatus(StatusBarLevel.SUCCESS, oldfile['name'] + "." + oldfile['ext'] +
+									 " was renamed to " + newfile['name'] + "." + newfile['ext'] + " successfully.");
+							}
+							else {
+								changeStatus(StatusBarLevel.ERROR, "Attempt to rename file " + oldfile + " failed!");
+							}
+						}, Util.ajax.dataType);
+					}
+					
+					// Delete the specified file
+					var deleteFile = function (file) {
+						var filename = file['name'] + "." + file['ext'];
+						changeStatus(StatusBarLevel.NORMAL, "Deleting " + filename + "...");
+						var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&deleteFile=true";
+						
+						$.post(Util.ajax.url, data, function (output) {
+							if (output.status == "OK") {																								
+								refreshFileBrowser();								
+								changeStatus(StatusBarLevel.SUCCESS, "Deleted " + filename + " successfully.");
+							}
+							else {
+								changeStatus(StatusBarLevel.ERROR, "Attempt to delete file " + filename + " failed!");
+							}
+						}, Util.ajax.dataType);						
+					}
+				</script>
+				<ul class="nav">
+					<li><a id="new" data-toggle="modal" href="#newFileDialog"><i class="icon-plus"></i> New</a></li>
+					<li><a id="save" href="#"><i class="icon-hdd"></i> Save</a></li>
+					<li><a id="rename" data-toggle="modal" href="#renameFileDialog"><i class="icon-pencil"></i> Rename</a></li>
+					<li><a id="compile" href="#"><i class="icon-folder-close"></i> Compile</a></li>
+					<li><a id="run" href="#"><i class="icon-play"></i> Run</a></li>
+					<li><a id="compilerun" href="#"><i class="icon-forward"></i> Compile & Run</a></li>					
+					<li><a id="delete" data-toggle="modal" href="#deleteFileDialog"><i class="icon-trash"></i> Delete</a></li>
+					<li><a id="submit" href="#"><i class="icon-share"></i> Submit</a></li>
+					<li><a id="preferences" data-toggle="modal" href="#preferencesDialog"><i class="icon-cog"></i> Preferences</a></li>
+				</ul>
+			</div>
+		</div>
+		
+		<!-- Modal Dialogs & Forms -->
+		
+		<!-- Create new file -->
+		<div id="newFileDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Create a new file</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">										
+					<div class="control-group">
+						<label class="control-label" for="filename">Name</label>
+						<div class="controls">
+							<input type="text" id="filename" placeholder="File name">
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="type">Type</label>
+						<div class="controls">
+							<select id="type">
+								<option value="c">C</option>
+								<option value="cpp">C++</option>
+							</select>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Create</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>			
+		</div>
+		
+		<!-- Rename file -->
+		<div id="renameFileDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Rename a file</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="filename">Select file</label>
+						<div class="controls">
+							<select id="filename">
+							</select>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="newfile">New name</label>
+						<div class="controls">
+							<input type="text" id="newfile" placeholder="File name">
+						</div>
+					</div>					
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="rename" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Rename</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>
+		</div>
+		
+		<!-- Delete file -->
+		<div id="deleteFileDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Delete a file</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="filename">Select file</label>
+						<div class="controls">
+							<select id="filename">
+							</select>
+						</div>
+					</div>			
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="delete" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Delete</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>
+		</div>
+		
+		<!-- Preferences -->
+		<div id="preferencesDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Editor Preferences</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<!-- Theme -->
+					<div class="control-group">
+						<label class="control-label" for="theme">Theme</label>
+						<div class="controls">
+							<select id="theme">
+								<option value="twilight">Twilight</option>
+								<option value="cobalt">Cobalt</option>
+								<option value="textmate">Textmate</option>
+								<option value="eclipse">Eclipse</option>
+							</select>
+						</div>
+					</div>
+					<!-- Font size -->
+					<div class="control-group">
+						<label class="control-label" for="fontsize">Font size</label>
+						<div class="controls">
+							<input id="fontsize" type="number" min="8" max="72" placeholder="8">
+						</div>
+					</div>
+					<!-- Tab width -->
+					<div class="control-group">
+						<label class="control-label" for="tabwidth">Tab width</label>
+						<div class="controls">
+							<input id="tabwidth" type="number" min="1" max="8" placeholder="4">
+						</div>
+					</div>
+					<script>
+						$(function () {
+							$('[rel=tooltip]').tooltip();
+						});						
+					</script>
+					<!-- Soft tabs -->
+					<div class="control-group">
+						<label class="control-label" for="softtabs" rel="tooltip" data-placement="right" title="Enable soft tabs">Soft tabs</label>						
+						<div class="controls">							
+							<label class="checkbox">
+								<input id="softtabs" type="checkbox" rel="tooltip" data-placement="right" title="Enable soft tabs">
+							</label>						
+						</div>
+					</div>
+					<!-- Show line numbers -->
+					<div class="control-group">						
+						<label class="control-label" for="showlinenos" rel="tooltip" data-placement="right" title="Show line numbers on the left">Line numbers</label>
+						<div class="controls">
+							<label class="checkbox">
+								<input id="showlinenos" type="checkbox" rel="tooltip" data-placement="right" title="Show line numbers on the left">
+							</label>							
+						</div>						
+					</div>
+					<!-- Highlight active line -->
+					<div class="control-group">
+						<label class="control-label" for="activeline" rel="tooltip" data-placement="right" title="Highlight the active line">Active line</label>
+						<div class="controls">							
+							<input id="activeline" type="checkbox" rel="tooltip" data-placement="right" title="Highlight the active line">
+						</div>
+					</div>
+					<!-- Show print margin -->
+					<div class="control-group">
+						<label class="control-label" for="printmargin" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">Print margin</label>
+						<div class="controls">
+							<label class="checkbox">
+								<input id="printmargin" type="checkbox" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">
+							</label>
+						</div>
+					</div>
+					<!-- Wrap words -->
+					<div class="control-group">
+						<label class="control-label" for="wordwrap" rel="tooltip" data-placement="right" title="Wrap words that overflow">Word wrap</label>
+						<div class="controls">
+							<label class="checkbox">
+								<input id="wordwrap" type="checkbox" rel="tooltip" data-placement="right" title="Wrap words that overflow">
+							</label>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="apply" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Apply</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>				
+		</div>
+		
+		<!--------------------------->
+			
+		<div class="container-fluid">
+			<div class="row-fluid editor">
+				<!-- Browser (Dynamically populated via AWS RDS) -->
+				<div id="browser" class="span2">
+					<ul class="nav nav-list horizontal-center">
+					</ul>	
+				</div>
+				<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>				
+				<!-- Editor -->
+				<div id="editorContainer" class="span6">
+					<div id="editor"></div>
+				</div>				
+				<!-- Terminal -->
+				<div id="terminalContainer" class="span4">
+					<div id="terminal"></div>					
+				</div>
+				<script type="text/javascript" src="js/editormanager.js"></script>
+			</div>			
+		</div>
+				
+		<script>
+			$(function () {
+											
+				var url = Util.urls.node;							
+		
+				// Generate an unique ID (might be useful for v2.0)
+				var id = Math.round($.now()*Math.random());
+									
+				var socket = io.connect(url);
+				
+				$( "#compile" ).click(function () {
+					changeStatus(StatusBarLevel.NORMAL, "Compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					var data = buildMessage(["contents"],
+											[EM.editor.getValue()]);
+					socket.emit('compile', data);
+				});
+				
+				$( "#run" ).click(function () {
+					changeStatus(StatusBarLevel.INTERIM, "Executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					var data = buildMessage();
+					socket.emit('run', data);
+				});
+				
+				$( "#compilerun" ).click(function () {
+					changeStatus(StatusBarLevel.NORMAL, "Compiling and executing" +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+					$( "#statusbar" ).text();
+					var data = buildMessage(["contents"],
+											[EM.editor.getValue()]);
+					socket.emit('compilerun', data); 
+				});
+				
+				// Helper function for creating the data for the message to be emitted
+				function buildMessage (keys, values) {
+					var cookies = Util.cookiesToArray();
+					var data = {
+						"user" : cookies['username'],
+						"name" : clickedFile['name'],
+						"ext" : clickedFile['ext']														
+					};
+					if (keys !== undefined && values !== undefined && keys.length == values.length) {
+						var n = keys.length;							
+						for (var i = 0; i < n; i++) {						
+							data[keys[i]] = values[i];
+						}
+					};					
+					return JSON.stringify(data); // Convert the data to valid JSON prior to emission
+				}
+				
+				socket.on('output', function(data) {
+					// If the response is valid JSON, it is runtime output
+					try {
+						changeStatus(StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
+						var jsonData = JSON.parse(data);
+						EM.appendValue("Runtime output:\n" +
+							jsonData.stderr + "\n\nProgram output:\n" +
+							jsonData.stdout + "\n===================\n", EM.terminal); // cursorPos: 0 or undefined is at the beginning; 1 is at the end
+					}
+					// else, it is compiler output
+					catch (e) {
+						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
+						EM.appendValue("Compiler output:\n" +
+							data + "\n===================\n", EM.terminal); // cursorPos: same as above
+					}
+					
+				});
+			
+			});            
+		</script>
+
+		
+		<!-- socket.io.js for the clientside is served by the node.js server itself -->
+		<script src="http://localhost:8000/socket.io/socket.io.js"></script> <!-- TODO: Change on server -->
+		
+    </body>
+</html>
