@@ -8,16 +8,18 @@ function EditorManager () {
     this.editor.setTheme("ace/theme/twilight");
     this.eSession.setMode("ace/mode/c_cpp");
     this.editor.setHighlightActiveLine(false);
+    this.eSession.setUseWrapMode(true);
     this.editor.setValue("Welcome to your project! Select a file to edit.");
     
     // Initialize the ace editor object
     this.terminal = ace.edit("terminal");
     this.tSession = this.terminal.getSession();
     this.tRenderer = this.terminal.renderer;
-    this.terminal.setTheme("ace/theme/twilight");
+    this.terminal.setTheme("ace/theme/cobalt");
     this.tSession.setMode("ace/mode/text");
     this.terminal.setReadOnly(true);
     this.terminal.setHighlightActiveLine(false);
+    this.tSession.setUseWrapMode(true);
     //this.tRenderer.setShowGutter(false);
     this.tRenderer.setShowPrintMargin(false);    
     
