@@ -6,14 +6,13 @@ body { /*padding-top: 40px;*/ /*background: #f0f0f0;*/ }
     font-size: 30px;
 }
 
-horizontal-center {
+.horizontal-center {
 	text-align: center;
 }
 
 /* Required parent of the centered element */
 .centered-container {
-	height: 100%;
-	text-align: center;
+	height: 100%;	
 }
 
 /* Ghost element, nudged to maintain perfect centering */
@@ -28,4 +27,8 @@ horizontal-center {
 .centered {
 	display: inline-block;
 	vertical-align: middle;
+}
+
+.overlay {
+	display: none;	
 }

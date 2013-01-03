@@ -74,7 +74,12 @@
                     "ext" => $_POST['ext']                    
                 );
                 $contents = $main->getFileManager()->openFile($user, $course, $project, $file);
-                if ($contents == null) {
+                if ($contents == "") {
+                    $output = $main->buildResponse("OK", array(
+                        "contents" => ""
+                    ));
+                }
+                else if ($contents == null) {
                     $output = $main->buildResponse("ZERO_RESULTS");
                 }
                 else {
@@ -98,7 +103,90 @@
                     $output = $main->buildResponse("OK");
                 }
                 else {
-                    $output = $main->buildResponse("SAVE_FAILED");
+                    $output = $main->buildResponse("FAIL");
+                }
+            }
+            // Rename the specified file
+            else if (!empty($_POST['renameFile'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_COOKIE['project'];
+                $old = array(
+                    "name" => $_POST['oldname'],
+                    "ext" => $_POST['oldext']
+                );
+                $new = array(
+                    "name" => $_POST['newname'],
+                    "ext" => $_POST['newext']
+                );
+                $success = $main->getFileManager()->renameFile($user, $course, $project, $old, $new);
+                if ($success) {                    
+                    // Return the updated list of files
+                    $files = $main->getFileManager()->getFiles($user, $course, $project);
+                    if ($files == null) {
+                        $output = $main->buildResponse("ZERO_RESULTS");    
+                    }
+                    else {                    
+                        $output = $main->buildResponse("OK", array(                                    
+                            "files" => $files
+                        ));
+                    }
+                }
+                else {
+                    $output = $main->buildResponse("FAIL");
+                }
+            }
+            // Create the specified file
+            else if (!empty($_POST['newFile'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_COOKIE['project'];
+                $file = array(
+                    "name" => $_POST['name'],
+                    "ext" => $_POST['ext']/*,
+                    "contents" => $_POST['contents']*/
+                );  
+                $success = $main->getFileManager()->createFile($user, $course, $project, $file);                
+                if ($success) {                    
+                    // Return the updated list of files
+                    $files = $main->getFileManager()->getFiles($user, $course, $project);
+                    if ($files == null) {
+                        $output = $main->buildResponse("ZERO_RESULTS");    
+                    }
+                    else {                    
+                        $output = $main->buildResponse("OK", array(                                    
+                            "files" => $files
+                        ));
+                    }
+                }
+                else {
+                    $output = $main->buildResponse("FAIL");
+                }
+            }
+            // Delete the specified file
+            else if (!empty($_POST['deleteFile'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_COOKIE['project'];
+                $file = array(
+                    "name" => $_POST['name'],
+                    "ext" => $_POST['ext']
+                );  
+                $success = $main->getFileManager()->deleteFile($user, $course, $project, $file);                
+                if ($success) {                    
+                    // Return the updated list of files
+                    $files = $main->getFileManager()->getFiles($user, $course, $project);
+                    if ($files == null) {
+                        $output = $main->buildResponse("ZERO_RESULTS");    
+                    }
+                    else {                    
+                        $output = $main->buildResponse("OK", array(                                    
+                            "files" => $files
+                        ));
+                    }
+                }
+                else {
+                    $output = $main->buildResponse("FAIL");
                 }
             }
             // Store the user's selected course in a cookie (overwrite)
