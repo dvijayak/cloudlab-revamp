@@ -7,6 +7,49 @@
 		<link href="css/general.css" rel="stylesheet">
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script src="js/util.js"></script>
+		<script>			
+			var cookies = Util.cookiesToArray();
+			// Ensure that the user properly lands on the page
+			if (!cookies['course']) {
+				window.location.href = "courses.html";
+			}
+			var data = "course=" + cookies['course'] + "&getProjects=true";
+			Util.validateSession(function (output) {
+				if (output.status == "OK") {					
+					// Generate list of projects for the chosen course					
+					var projects = output.data.projects;
+					var nProjects = projects.length;
+					for (var i = 0; i < nProjects; i++) {
+						// Create the UI elements
+						/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
+						 * Otherwise, projects[i] would take the value of undefined
+						 */
+						// Clicking on a project takes the user to the editor for the project
+						$( "<li><a href='#'>" + projects[i].toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
+							var data = "project=" + event.data.project;								
+							$.post(Util.ajax.url, data, function (output) {									
+								if (output.status == "OK") {										
+									window.location.href="editor.html";
+								}
+							}, Util.ajax.dataType);							
+						}).appendTo( "#browser ul" );
+					}
+				}
+				else if (output.status == "ZERO_RESULTS") {
+					$( "#browser" ).text("There are no projects for this course.");
+					if (cookies['role'] == "2") {
+						$( "#toolbar" ).slideDown('fast');
+					}
+				}
+				// Show toolbar if Instructor
+				var cookies = Util.cookiesToArray();
+				if (cookies['role'] == "2") {				
+					$( "#toolbar" ).slideDown('fast');
+					$( "body" ).css('padding-top', '80px');
+				}				
+			}, data);
+		</script>		
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <script src="js/bootstrap.min.js"></script>
@@ -15,6 +58,11 @@
         <style>
 			body { padding-top: 40px; } /* Accounts for top fixed header */
 			
+			#toolbar {
+				margin-top: 40px;
+				display: none;
+			}
+			
 			#browser li a {
 				text-align: center;
 			}
@@ -22,19 +70,25 @@
     </head>
 	<body>		
 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
+			<script>
+				$(function () {
+					var cookies = Util.cookiesToArray();					
+					$( "#header #title" ).text(cookies['course'].toUpperCase() + ": Choose Project");
+				});
+			</script>				
 			<div class="navbar-inner">
 				<div class="pull-left">
 					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
 				</div>
 				<ul class="nav">					
 					<li>
-						<p class="navbar-text">Choose Project</p>
+						<p id="title" class="navbar-text"></p>
 					</li>					
 				</ul>
 				<div class="pull-right">
 					<ul class="nav">
 						<li>
-							<p id="user" class="navbar-text">Michael</p>
+							<p id="user" class="navbar-text"></p>
 						</li>
 					</ul>
 					<a id="logout" class="btn btn-danger" href="#">Logout</a>					
@@ -43,14 +97,27 @@
 		</div>
 		
 		<!-- Only viewable by instructors -->
-		<div id="toolbar" class="btn-toolbar">
-			<div class="btn-group">
-				<button class="btn btn-inverse">New</button>
-				<button class="btn btn-inverse">Edit</button>
-				<button class="btn btn-inverse">Delete</button>
-				<button class="btn btn-inverse">Upload</button>
-				<button class="btn btn-inverse">Submit</button>
-				<button class="btn btn-inverse">Distribute</button>
+		<!--<div id="toolbar" class="btn-toolbar">-->
+		<!--	<div class="btn-group">-->
+		<!--		<button class="btn btn-inverse">New</button>-->
+		<!--		<button class="btn btn-inverse">Edit</button>-->
+		<!--		<button class="btn btn-inverse">Delete</button>-->
+		<!--		<button class="btn btn-inverse">Upload</button>-->
+		<!--		<button class="btn btn-inverse">Submit</button>-->
+		<!--		<button class="btn btn-inverse">Distribute</button>-->
+		<!--	</div>-->
+		<!--</div>-->
+		<div id="toolbar" class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<ul class="nav">
+					<li><a id="new" href="#">New</a></li>
+					<li><a id="save" href="#">Edit</a></li>
+					<li><a id="delete" href="#">Delete</a></li>
+					<li><a id="upload" href="#">Upload</a></li>
+					<li><a id="submit" href="#">Submit</a></li>
+					<li><a id="distribute" href="#">Distribute</a></li>
+										
+				</ul>
 			</div>
 		</div>
 		
@@ -58,9 +125,7 @@
 			
 			<div class="row-fluid">
 				<div id="browser" class="span2">
-					<ul class="nav nav-list">					
-						<li><a href="#">CIS1500</a></li>
-						<li><a href="#">CIS3760</a></li>
+					<ul class="nav nav-list">											
 					</ul>	
 				</div>
 				<div id="preview" class="span10">					

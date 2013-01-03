@@ -7,6 +7,99 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>
+		<script>			
+			var clickedFile; // Document scope: Keep track of the file that was clicked
+			var cookies = Util.cookiesToArray();
+			// Ensure that the user properly lands on the page
+			if (!cookies['course']) {
+				window.location.href = "courses.html";
+			}
+			else if (!cookies['project']) {
+				window.location.href = "projects.html";
+			}
+			var data = "project=" + cookies['project'] + "&getFiles=true";
+			Util.validateSession(function (output) {
+				if (output.status == "OK") {					
+					// Generate list of files for the chosen project				
+					var files = output.data.files;
+					var nFiles = files.length;				
+					for (var i = 0; i < nFiles; i++) {
+						// Create the UI elements
+						/* Note: by passing a data map to the click handler, we preserve the value of files[i].
+						 * Otherwise, files[i] would take the value of undefined
+						 */
+						// Clicking on a file opens it
+						$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+							openFile(event.data.file);
+						}).appendTo( "#browser ul" );
+						
+						// Open the first file by default (can be changed to open last saved file via cookies, etc.)
+						if (i == 0) {
+							openFile(files[i]);
+						}
+					}
+				}
+				else if (output.status == "ZERO_RESULTS") {
+					$( "#browser" ).text("There are no files for this project.");			
+				}
+				// Show toolbar if Student
+				var cookies = Util.cookiesToArray();
+				if (cookies['role'] == "1") {	
+					$( "#toolbar" ).slideDown('fast');
+					$( "body" ).css('padding-top', '80px');
+				}					
+			}, data);
+			
+			// Open the specified file and load its contents in the editor
+			var openFile = function (file) {
+				var name = file['name'] + "." + file['ext'];
+				changeStatus(StatusBarLevel.NORMAL, "Opening " +  name + "...");				
+				
+				var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&openFile=true";
+				$.post(Util.ajax.url, data, function (output) {
+					if (output.status == "OK") {
+						// Remember the currently opened file
+						clickedFile = {
+							"name" : file['name'],
+							"ext" : file['ext']
+						};
+						EM.editor.setValue(output.data.contents, 1);																		
+						changeStatus(StatusBarLevel.SUCCESS, name + " was opened successfully.");
+					}
+					else {						
+						changeStatus(StatusBarLevel.ERROR, "Attempt to open " + name + " failed!");
+					}
+				}, Util.ajax.dataType);										
+			}
+			
+			// A mapping between human-readable status levels and their respective classes
+			var StatusBarLevel = {
+				NORMAL : "normal",
+				SUCCESS : "success",
+				INTERIM : "interim",
+				WARNING : "warning",
+				ERROR : "error"
+			}
+			
+			// Changes the visual indication of the status as specified and displays the specified message in the status bar
+			var changeStatus = function (status, message) {
+				// Get all the classes that currently attached to the element
+				var oldClasses = $( "#statusbar #status" ).attr('class');
+				// Remove the old classes and attach the new class
+				$( "#statusbar #status" ).toggleClass(oldClasses + " " + status);
+				// If a message is provided, display it
+				if (message !== undefined) {
+					$( "#statusbar #status" ).text(message);
+					// Return the status bar back to normal after 3 seconds
+					if (message != "Ready.") { // Avoids an endless recursive loop
+						setTimeout(function () {
+									changeStatus(StatusBarLevel.NORMAL, "Ready.")
+								}, 5000);
+					}
+				}				
+			}
+			
+		</script>		
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <script src="js/bootstrap.min.js"></script>
@@ -16,10 +109,11 @@
         <!--------------->
 		<link href="css/general.css" rel="stylesheet">
         <style>
-			body { padding-top: 80px;} /* Accounts for top fixed header */
+			body { padding-top: 40px;} /* Accounts for top fixed header */
 			
 			#toolbar {
 				margin-top: 40px;
+				display: none;
 			}
 			
 			#statusbar {
@@ -92,19 +186,25 @@
     </head>
     <body>
  		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
+			<script>
+				$(function () {
+					var cookies = Util.cookiesToArray();					
+					$( "#header #title" ).text(cookies['course'].toUpperCase() + ": " + cookies['project'].toUpperCase());
+				});
+			</script>				
 			<div class="navbar-inner">
 				<div class="pull-left">
 					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
 				</div>
 				<ul class="nav">					
 					<li>
-						<p class="navbar-text">Edit File</p>
+						<p id="title" class="navbar-text"></p>
 					</li>					
 				</ul>
 				<div class="pull-right">
 					<ul class="nav">
 						<li>
-							<p id="user" class="navbar-text">Michael</p>
+							<p id="user" class="navbar-text"></p>
 						</li>
 					</ul>
 					<a id="logout" class="btn btn-danger" href="#">Logout</a>					
@@ -114,17 +214,38 @@
 		
 		<!-- Only viewable by students -->
 		<!--<div id="toolbar" class="btn-toolbar">-->
+		<!--	<script>-->
+		<!--		// Save the contents of the current file in the editor-->
+		<!--		function saveFile () {-->
+		<!--			var file = clickedFile['name'] + "." + clickedFile['ext'];-->
+		<!--			changeStatus(StatusBarLevel.NORMAL, "Saving " +  file + "...");-->
+		<!--			var contents = EM.editor.getValue();-->
+		<!--			var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +-->
+		<!--				"&contents=" + contents + "&saveFile=true";-->
+		<!--			$.post(Util.ajax.url, data, function (output) {						-->
+		<!--				if (output.status == "OK") {-->
+		<!--					changeStatus(StatusBarLevel.SUCCESS, file + " was saved successfully.");							-->
+		<!--				}-->
+		<!--				else {-->
+		<!--					changeStatus(StatusBarLevel.ERROR, "Attempt to save " + file + " failed!");							-->
+		<!--				}-->
+		<!--			}, Util.ajax.dataType);-->
+		<!--		}-->
+		<!--		$(function () {-->
+		<!--			$( "#save" ).click(saveFile);-->
+		<!--		});-->
+		<!--	</script>			-->
 		<!--	<div class="btn-group">-->
-		<!--		<button class="btn btn-inverse">New</button>-->
-		<!--		<button class="btn btn-inverse">Save</button>-->
-		<!--		<button class="btn btn-inverse">Rename</button>-->
-		<!--		<button class="btn btn-inverse">Compile</button>-->
-		<!--		<button class="btn btn-inverse">Run</button>-->
-		<!--		<button class="btn btn-inverse">Compile &amp; Run</button>-->
-		<!--		<button class="btn btn-inverse">Delete</button>-->
-		<!--		<button class="btn btn-inverse">Submit</button>-->
+		<!--		<button id="new" class="btn btn-inverse">New</button>-->
+		<!--		<button id="save" class="btn btn-inverse">Save</button>-->
+		<!--		<button id="rename" class="btn btn-inverse">Rename</button>-->
+		<!--		<button id="compile" class="btn btn-inverse">Compile</button>-->
+		<!--		<button id="run" class="btn btn-inverse">Run</button>-->
+		<!--		<button id="compilerun" class="btn btn-inverse">Compile &amp; Run</button>-->
+		<!--		<button id="delete" class="btn btn-inverse">Delete</button>-->
+		<!--		<button id="submit" class="btn btn-inverse">Submit</button>-->
 		<!--		<div class="btn-group">-->
-		<!--			<a class="btn btn-inverse dropdown-toggle" data-toggle="dropdown" href="#">-->
+		<!--			<a id="preferences" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown" href="#">-->
 		<!--				Preferences-->
 		<!--				<span class="caret"></span>					-->
 		<!--			</a>-->
@@ -142,6 +263,27 @@
 		<!--	</div>-->
 		<!--</div>-->
 		<div id="toolbar" class="navbar navbar-fixed-top">
+			<script>
+				// Save the contents of the current file in the editor
+				function saveFile () {
+					var file = clickedFile['name'] + "." + clickedFile['ext'];
+					changeStatus(StatusBarLevel.NORMAL, "Saving " +  file + "...");
+					var contents = EM.editor.getValue();
+					var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +
+						"&contents=" + contents + "&saveFile=true";
+					$.post(Util.ajax.url, data, function (output) {						
+						if (output.status == "OK") {
+							changeStatus(StatusBarLevel.SUCCESS, file + " was saved successfully.");							
+						}
+						else {
+							changeStatus(StatusBarLevel.ERROR, "Attempt to save " + file + " failed!");							
+						}
+					}, Util.ajax.dataType);
+				}
+				$(function () {
+					$( "#save" ).click(saveFile);
+				});
+			</script>			
 			<div class="navbar-inner">
 				<ul class="nav">
 					<li><a id="new" href="#">New</a></li>
@@ -172,14 +314,10 @@
 			</div>
 		</div>
 		
+		<!-- Status Bar -->
 		<div id="statusbar" class="navbar navbar navbar-fixed-bottom">
 			<div class="navbar-inner">
-				<!--<ul class="nav">-->
-				<!--	<li>-->
-				<!--		<span class="nav-text normal">Ready.</span>-->
-				<!--	</li>-->
-				<!--</ul>-->
-				<span class="normal">Ready.</span>
+				<span id="status" class="normal">Ready.</span>
 				<div class="pull-right">
 					<button id="clear" class="btn btn-inverse"><b>Clear Terminal</b></button>
 					<script>
@@ -192,16 +330,11 @@
 		</div>
 		
 		<div class="container-fluid">
-			<!-- Status Bar -->
-			<!--<div class="row-fluid">				-->
-			<!--	<div id="statusbar" class="normal">Ready.-->
-			<!--						-->
-			<!--	</div>					-->
-			<!--</div>-->
-			
 			<div class="row-fluid editor">
 				<!-- Browser (Dynamically populated via AWS RDS) -->
 				<div id="browser" class="span2">
+					<ul class="nav nav-list">
+					</ul>	
 				</div>
 				<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>				
 				<!-- Editor -->
@@ -276,7 +409,7 @@
 					// else, it is compiler output
 					catch (e) {
 						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
-						$( "#statusbar" ).text("Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext']);
+						changeStatus(StatusBarLevel.SUCCESS, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext']);
 						EM.appendValue("Compiler output:\n" +
 							data + "\n===================\n", EM.terminal); // cursorPos: same as above
 					}

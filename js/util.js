@@ -61,7 +61,7 @@ function Util () {
                         
 						// Personalize page
 						var cookies = Util.cookiesToArray();
-						$( "#header_username" ).text(cookies['firstname']);
+						$( "#header #user" ).text(cookies['firstname']);
                         
                         // Perform the additional AJAX task only if it was specified
                         if (task !== undefined) {                                                    
