@@ -337,7 +337,7 @@
 				socket.on('output', function(data) {
 					// If the response is valid JSON, it is runtime output
 					try {
-						changeStatus(StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+						changeStatus(StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
 						var jsonData = JSON.parse(data);
 						EM.appendValue("Runtime output:\n" +
 							jsonData.stderr + "\n\nProgram output:\n" +
@@ -345,7 +345,7 @@
 					}
 					// else, it is compiler output
 					catch (e) {
-						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
 						EM.appendValue("Compiler output:\n" +
 							data + "\n===================\n", EM.terminal); // cursorPos: same as above
 					}
