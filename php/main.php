@@ -2,8 +2,8 @@
 
     /* error reporting must be set at -1 during testing */
     
-    error_reporting(E_ALL ^ E_NOTICE);
-    //error_reporting(-1);
+    //error_reporting(E_ALL ^ E_NOTICE);
+    error_reporting(-1);
     
     // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
     //require_once("PhpConsole.php");
@@ -250,7 +250,7 @@
                                                                      * TODO: When scripts are finally hosted on a different server,
                                                                      * uncomment this expression
                                                                      */
-            $this->paths->serverRoot = "/cloudlab_revamp/"; /* TODO: Change on server */
+            $this->paths->serverRoot = "/"; /* TODO: Change on server */
             
             /* Attempt to allocate all managers */
             

@@ -17,7 +17,7 @@
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <script src="js/bootstrap.min.js"></script>
-        <!--------------->        
+        <!------------->        
         <style>            
             body {
                 padding-top: 80px;
@@ -58,7 +58,7 @@
 							data = "username=" + $( "#username" ).val() + "&password=" + CryptoJS.MD5($( "#password" ).val()),
 							success = function (output) {								
 								if (output.status == "OK") {
-									var cookies = Util.cookiesToArray();
+									var cookies = Util.cookiesToArray();	
 									if (cookies['role'] == "3") {
 										window.location.href="admin.html";
 									}
