@@ -120,7 +120,10 @@
 				margin-top: 80px;
 				text-align: center;				
 			}
-						
+			
+			#browser li a {
+				text-align: center;
+			}
 			
 			/* Get a child container to fill up a parent container
 			 * (Got this to work after hours of pulling hair out of my head)
@@ -175,7 +178,7 @@
 			}
 			
 			.container-fluid {
-				/*background: #e5e5e5;*/
+				/*padding: 0;*/
 			}
 			
 			.editor {
@@ -213,55 +216,6 @@
 		</div>
 		
 		<!-- Only viewable by students -->
-		<!--<div id="toolbar" class="btn-toolbar">-->
-		<!--	<script>-->
-		<!--		// Save the contents of the current file in the editor-->
-		<!--		function saveFile () {-->
-		<!--			var file = clickedFile['name'] + "." + clickedFile['ext'];-->
-		<!--			changeStatus(StatusBarLevel.NORMAL, "Saving " +  file + "...");-->
-		<!--			var contents = EM.editor.getValue();-->
-		<!--			var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +-->
-		<!--				"&contents=" + contents + "&saveFile=true";-->
-		<!--			$.post(Util.ajax.url, data, function (output) {						-->
-		<!--				if (output.status == "OK") {-->
-		<!--					changeStatus(StatusBarLevel.SUCCESS, file + " was saved successfully.");							-->
-		<!--				}-->
-		<!--				else {-->
-		<!--					changeStatus(StatusBarLevel.ERROR, "Attempt to save " + file + " failed!");							-->
-		<!--				}-->
-		<!--			}, Util.ajax.dataType);-->
-		<!--		}-->
-		<!--		$(function () {-->
-		<!--			$( "#save" ).click(saveFile);-->
-		<!--		});-->
-		<!--	</script>			-->
-		<!--	<div class="btn-group">-->
-		<!--		<button id="new" class="btn btn-inverse">New</button>-->
-		<!--		<button id="save" class="btn btn-inverse">Save</button>-->
-		<!--		<button id="rename" class="btn btn-inverse">Rename</button>-->
-		<!--		<button id="compile" class="btn btn-inverse">Compile</button>-->
-		<!--		<button id="run" class="btn btn-inverse">Run</button>-->
-		<!--		<button id="compilerun" class="btn btn-inverse">Compile &amp; Run</button>-->
-		<!--		<button id="delete" class="btn btn-inverse">Delete</button>-->
-		<!--		<button id="submit" class="btn btn-inverse">Submit</button>-->
-		<!--		<div class="btn-group">-->
-		<!--			<a id="preferences" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown" href="#">-->
-		<!--				Preferences-->
-		<!--				<span class="caret"></span>					-->
-		<!--			</a>-->
-		<!--			<ul class="dropdown-menu" role="menu">-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--				<li><a href="#">Theme</a></li>-->
-		<!--			</ul>					-->
-		<!--		</div>				-->
-		<!--	</div>-->
-		<!--</div>-->
 		<div id="toolbar" class="navbar navbar-fixed-top">
 			<script>
 				// Save the contents of the current file in the editor
