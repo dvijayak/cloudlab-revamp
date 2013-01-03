@@ -2,12 +2,12 @@
 
     /* error reporting must be set at -1 during testing */
     
-    //error_reporting(E_ALL ^ E_NOTICE);
-    error_reporting(-1);
+    error_reporting(E_ALL ^ E_NOTICE);
+    //error_reporting(-1);
     
     // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
-    require_once("PhpConsole.php");
-    PHPConsole::start();
+    //require_once("PhpConsole.php");
+    //PHPConsole::start();
     /////////////////////////////////////////////////////////////////////////
      
     $main = new Main();    
@@ -239,7 +239,7 @@
         
         private $userData = null;
         
-        public function __construct ($root = "/home/pilgrim/private_html/cloudlab_revamp/") { /* TODO: Change on server */
+        public function __construct ($root = "/home/cloudlab/public_html/") { /* TODO: Change on server */
             $this->paths = new stdClass();
             $this->paths->root = $root;
             $this->paths->php = $this->paths->root . "php/";

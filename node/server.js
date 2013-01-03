@@ -101,7 +101,7 @@ io.sockets.on('connection', function (socket) {
 			else command = "/usr/bin/gcc"
 			console.log("Compiling " + file + "...");
 			// I could have set file = COMPILE_PATH + .... in the first place, but I want to avoid any potential future parsing
-			var child = exec(command + " " + (COMPILE_PATH + "/" + file) + " -o " + (COMPILE_PATH + "/" + file) + ".out -Wall -std=c99 -pedantic", function (error, stdout, stderr) {
+			var child = exec(command + " " + (COMPILE_PATH + "/" + file) + " -o " + (COMPILE_PATH + "/" + file) + ".out -Wall -pedantic", function (error, stdout, stderr) {
 				var stdoutput = ((stdout) ? stdout : "No output"),
 					stderror = ((stderr) ? stderr : "No compilation issues!");
 				console.log("STDOUT: " + stdoutput);
