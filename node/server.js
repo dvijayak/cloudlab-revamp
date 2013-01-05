@@ -10,7 +10,7 @@ var fs = require('fs'),
 var COMPILE_PATH = "compile";
 
 // This is the port for our web server.
-// you will need to go to http://localhost:8080 to see it
+// you will need to go to http://localhost:8000 to see it
 app.listen(8000);
 
 var nconnections = 0;

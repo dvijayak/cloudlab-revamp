@@ -3,11 +3,11 @@
     /* error reporting must be set at -1 during testing */
     
     //error_reporting(E_ALL ^ E_NOTICE);
-    error_reporting(-1);
+    error_reporting(-1);        
     
     // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
-    //require_once("PhpConsole.php");
-    //PHPConsole::start();
+    require_once("PhpConsole.php");
+    PHPConsole::start();
     /////////////////////////////////////////////////////////////////////////
      
     $main = new Main();    
@@ -191,17 +191,17 @@
             }
             // Store the user's selected course in a cookie (overwrite)
             else if (!empty($_POST['course'])) {
-                setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
+                setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
                 $output = $main->buildResponse("OK");
             }
             // Store the user's selected project in a cookie (overwrite)
             else if (!empty($_POST['project'])) {
-                setcookie('project', $_POST['project'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
+                setcookie('project', $_POST['project'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
                 $output = $main->buildResponse("OK");
             }
             // Store the user's selected file in a cookie (overwrite)
             else if (!empty($_POST['file'])) {
-                setcookie('file', $_POST['file'], time()+3600, $main->getPaths()->serverRoot, $main->getPaths()->domain);
+                setcookie('file', $_POST['file'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
                 $output = $main->buildResponse("OK");
             }
             // Default response: simply inform the client that the user is logged in
@@ -239,31 +239,26 @@
         
         private $userData = null;
         
-        public function __construct ($root = "/home/cloudlab/public_html/") { /* TODO: Change on server */
-            $this->paths = new stdClass();
-            $this->paths->root = $root;
-            $this->paths->php = $this->paths->root . "php/";
-            $this->paths->img = $this->paths->root . "img/";
-            $this->paths->lib = $this->paths->root . "lib/";
-            $this->paths->css = $this->paths->root . "css/";
+        public function __construct ($root = "/cloudlab_revamp/") { /* TODO: Change on server */
+            $this->paths = new stdClass();            
+            $this->paths->root = $root; /* TODO: Change on server */            
             $this->paths->domain = null/*$_SERVER['SERVER_NAME']*/; /* Do not explicitly state "localhost"; use null instead.
                                                                      * TODO: When scripts are finally hosted on a different server,
                                                                      * uncomment this expression
                                                                      */
-            $this->paths->serverRoot = "/"; /* TODO: Change on server */
             
             /* Attempt to allocate all managers */
-            
-            require_once ($this->paths->php . "DBManager.php");
-            $this->dbm = new DBManager();
-            
-            require_once ($this->paths->php . "CourseManager.php");                    
-            $this->cm = new CourseManager($this->dbm);            
-            
-            require_once ($this->paths->php . "ProjectManager.php");            
-            $this->pm = new ProjectManager($this->dbm);
                         
-            require_once ($this->paths->php . "FileManager.php");
+            require_once ("DBManager.php");
+            $this->dbm = new DBManager();
+                        
+            require_once ("CourseManager.php");
+            $this->cm = new CourseManager($this->dbm);            
+                        
+            require_once ("ProjectManager.php");
+            $this->pm = new ProjectManager($this->dbm);
+                                    
+            require_once ("FileManager.php");
             $this->fm = new FileManager($this->dbm);
         }
         
@@ -312,7 +307,7 @@
             // Creating Cookies
             $keys = array_keys($details);            
             foreach ($keys as $key) {
-                setcookie($key, $details[$key], time()+3600, $this->paths->serverRoot, $this->paths->domain);
+                setcookie($key, $details[$key], time()+3600, $this->paths->root, $this->paths->domain);
                 //$this->userData[$key] = $details[$key];
             }
         }
@@ -331,7 +326,7 @@
         private function destroySession () {
             $keys = array_keys($_COOKIE);
             foreach ($keys as $key) {
-                setcookie($key, $_COOKIE[$key], time()-3600, $this->paths->serverRoot, $this->paths->domain);
+                setcookie($key, $_COOKIE[$key], time()-3600, $this->paths->root, $this->paths->domain);
             }
         }
         
