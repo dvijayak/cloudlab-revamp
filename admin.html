@@ -120,7 +120,7 @@
 									console.log(event.data);
 									$.post(Util.ajax.url, data, function (output) {
 										if (output.status == "OK") {
-											alert("Created user " + event.data.idnum + " successfully.");
+											alert("Deleted user " + event.data.idnum + " successfully.");
 										}
 										else {
 											alert("Attempt to delete user " + event.data.idnum + " failed!");

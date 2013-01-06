@@ -63,20 +63,8 @@
 			" user_firstname AS 'fname', user_lastname AS 'lname', user_email AS 'email', group_id as 'role' FROM Users" .
 			" WHERE group_id != 3;";
             
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    return null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $users = array();
-                while ($row = mysql_fetch_assoc($result)) {
-                    array_push($users, $row);                    
-                }                
-                return $users;
-            } 			
+			$users = $this->dbm->queryFetchAssoc($query);
+			return $users;			
 		}
 		
 		/**
@@ -87,20 +75,8 @@
 			" user_firstname AS 'fname', user_lastname AS 'lname', user_email AS 'email', group_id as 'role' FROM Users" .
 			" WHERE group_id = 1;";
             
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    return null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $users = array();
-                while ($row = mysql_fetch_assoc($result)) {
-                    array_push($users, $row);                    
-                }                
-                return $users;
-            } 				
+            $students = $this->dbm->queryFetchAssoc($query);
+			return $students;	 				
 		}
 		
 		/**
@@ -111,20 +87,8 @@
 			" user_firstname AS 'fname', user_lastname AS 'lname', user_email AS 'email', group_id as 'role' FROM Users" .
 			" WHERE group_id = 2;";
             
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    return null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $users = array();
-                while ($row = mysql_fetch_assoc($result)) {
-                    array_push($users, $row);                    
-                }                
-                return $users;
-            } 				
+            $instructors = $this->dbm->queryFetchAssoc($query);
+			return $instructors;					
 		}
 		
 		/*
@@ -134,16 +98,25 @@
 			$idnum = mysql_real_escape_string($user['idnum']);
 			$id = mysql_real_escape_string($user['id']);
 			
+			$queries = array();
 			// Delete all files owned by the user			
-			$query = "DELETE FROM Files WHERE file_owner = '" . $id . "';";			
-			
+			$query = "DELETE FROM Files WHERE file_owner = '" . $id . "';";
+			array_push($queries, $query);
 			// Withdraw the user from all courses enrolled in
-			$query .= "DELETE FROM Enrollments WHERE user_id = '" . $id . "';";
-
+			$query = "DELETE FROM Enrollments WHERE user_id = '" . $id . "';";
+			array_push($queries, $query);
 			// Delete the user
-			$query .= "DELETE FROM Users WHERE user_number = '" . $idnum . "';";
-									
-			$success = $this->dbm->query($query);
+			$query = "DELETE FROM Users WHERE user_number = '" . $idnum . "';";
+			array_push($queries, $query);
+			
+			$results = $this->dbm->queryChain($queries);
+			$success = true;
+			foreach ($results as $result) {				
+				$success = $result;
+				if (!$success) {
+					break;
+				}
+			}									
 			return $success;
 		}
 		

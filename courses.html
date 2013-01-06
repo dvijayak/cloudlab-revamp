@@ -16,15 +16,17 @@
 						if (output.status == "OK") {
 							// Generate list of courses for the user
 							var courses = output.data.courses;
+							console.log(courses);
 							var nCourses = courses.length;
-							for (var i = 0; i < nCourses; i++) {
+							console.log(nCourses);
+							for (var i = 0; i < nCourses; i++) {								
 								// Create the UI elements
 								/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
 								 * Otherwise, courses[i] would take the value of undefined
 								 */
 								// Clicking on a course takes the user to the projects browser for that course
-								$( "<li><a href='#'>" + courses[i].toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
-									var data = "course=" + event.data.course;								
+								$( "<li><a href='#'>" + courses[i].course.toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
+									var data = "course=" + event.data.course.course;								
 									$.post(Util.ajax.url, data, function (output) {									
 										if (output.status == "OK") {										
 											window.location.href="projects.html";

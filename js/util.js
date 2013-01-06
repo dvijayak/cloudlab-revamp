@@ -47,7 +47,7 @@ function Util () {
                "validate=true",
                function (output) {                    
                     // Ensure that the user is logged in
-                    if (output.status == "OK") {
+                    if (output.status == "VALIDATED") {
                         /* Perform default operations */
                         
                         // Bind onclick events to the Back and Logout buttons

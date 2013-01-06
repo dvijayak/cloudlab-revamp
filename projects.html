@@ -25,8 +25,8 @@
 						 * Otherwise, projects[i] would take the value of undefined
 						 */
 						// Clicking on a project takes the user to the editor for the project
-						$( "<li><a href='#'>" + projects[i].toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
-							var data = "project=" + event.data.project;								
+						$( "<li><a href='#'>" + projects[i].project.toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
+							var data = "project=" + event.data.project.project;								
 							$.post(Util.ajax.url, data, function (output) {									
 								if (output.status == "OK") {										
 									window.location.href="editor.html";

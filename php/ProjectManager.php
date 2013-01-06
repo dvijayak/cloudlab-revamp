@@ -16,20 +16,8 @@
         public function getProjects ($course) {        
             $course = mysql_real_escape_string($course);
             $query = "SELECT project_name AS project FROM Projects WHERE course_id='" . $course . "'";
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $projects = null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $projects = array();
-                while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($projects, $row['project']);
-                }                
-                return $projects;
-            }        
+            $projects = $this->dbm->queryFetchAssoc($query);
+			return $projects;		       
         }
                 
     //    function create_bb_project($project_name) {

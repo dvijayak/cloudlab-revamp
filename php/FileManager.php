@@ -39,8 +39,7 @@
             $query = "INSERT INTO Files (file_name, file_ext, project_id, file_owner, file_data)" .
             " VALUES ('" . $filename . "', '" . $ext . "', (" . $subquery . "), '" . $username . "', '" . $contents . "');";
                                 
-            $success = $this->dbm->query($query);
-            $success = true; // TODO: temporary fix
+            $success = $this->dbm->query($query);            
             return $success;           
         }
         
@@ -57,8 +56,7 @@
             " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
             "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
             
-            $success = $this->dbm->query($query);
-            $success = true; // TODO: temporary fix
+            $success = $this->dbm->query($query);            
             return $success;            
         }
         
@@ -72,29 +70,14 @@
             // Retrieve the project id for the given pair of course id and project name
             $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
             // Retrieve the list of files for the given project id which is owned by the given user
-            $query = "SELECT Enrollments.course_id, Projects.project_name, Files.*" .
+            $query = "SELECT Enrollments.course_id AS 'course', Projects.project_name AS 'project'," .
+            " Files.file_id AS 'id', Files.file_name AS 'name', Files.file_ext AS 'ext', Files.project_id, Files.file_owner AS 'owner', Files.file_data AS 'contents'" .
             " FROM Enrollments, Projects, Files WHERE Files.file_owner = '" . $username . // Note that each new line continuation begins with a space
             "' AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
             " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";
             
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $files = null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $files = array();
-                while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($files, array(
-                        "name" => $row['file_name'],
-                        "ext" => $row['file_ext']
-                        //"contents" => $row['file_data'],                                            
-                    ));
-                }                
-                return $files;
-            }        
+            $files = $this->dbm->queryFetchAssoc($query);
+			return $files;		       
         }
         
         public function openFile ($username, $course, $project, $file) {
@@ -109,23 +92,20 @@
             $query = "SELECT file_data FROM Files" .
             " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
             "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
+                        
             
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
+            $result = $this->dbm->query($query);
+            if (!$result) {                
+                return false;
+            }
+            else if (mysql_num_rows($result) == 0) {
+                return "";
             }
             else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $contents = "";                    
-                }
-                else {
-                    // Iterate as long as we have rows in the result set                  
-                    while ($row = mysql_fetch_assoc($result)) {                    
-                        $contents = $row['file_data'];
-                    }
-                }
-                //var_dump($contents);
+                $result = mysql_fetch_assoc($result);                
+                $contents = $result['file_data'];                
                 return $contents;
-            }
+            }  
         }
         
         public function saveFile ($username, $course, $project, $file) {

@@ -20,33 +20,22 @@
     }
     else {
         // If user is validly logged in already, carry on
-        if ($main->validateSession()) {        
+        if ($main->validateSession()) {            
             // Get the list of courses for the user
-            if (!empty($_POST['getCourses'])) {
+            if (!empty($_POST['getCourses'])) {                
                 $user = $_COOKIE['username'];
                 $courses = $main->getCourseManager()->getCourses($user);
-                if ($courses == null) {
-                    $output = $main->buildResponse("ZERO_RESULTS");    
-                }
-                else {                    
-                    $output = $main->buildResponse("OK", array(                                    
-                        "courses" => $courses
-                    ));
-                }
+                $output = $main->buildResponse(array(
+                    "courses" => $courses
+                ));                
             }
             // Get the list of projects for the chosen course
             else if (!empty($_POST['getProjects'])) {                                        
                 $course = $_POST['course'];                
                 $projects = $main->getProjectManager()->getProjects($course);
-                if ($projects == null) {
-                    $output = $main->buildResponse("ZERO_RESULTS");    
-                }
-                else {                    
-                    $output = $main->buildResponse("OK", array(                                    
-                        "projects" => $projects
-                    ));
-                }
-                
+                $output = $main->buildResponse(array(
+                    "projects" => $projects
+                ));
             }
             // Get the list of files for the chosen project
             else if (!empty($_POST['getFiles'])) {
@@ -54,15 +43,9 @@
                 $course = $_COOKIE['course'];
                 $project = $_POST['project'];
                 $files = $main->getFileManager()->getFiles($user, $course, $project);
-                if ($files == null) {
-                    $output = $main->buildResponse("ZERO_RESULTS");    
-                }
-                else {                    
-                    $output = $main->buildResponse("OK", array(                                    
-                        "files" => $files
-                    ));
-                }
-                
+                $output = $main->buildResponse(array(
+                    "files" => $files
+                ));
             }
             // Open (retrieve the contents of) the specified file
             else if (!empty($_POST['openFile'])) {
@@ -73,20 +56,10 @@
                     "name" => $_POST['name'],
                     "ext" => $_POST['ext']                    
                 );
-                $contents = $main->getFileManager()->openFile($user, $course, $project, $file);
-                if ($contents == "") {
-                    $output = $main->buildResponse("OK", array(
-                        "contents" => ""
-                    ));
-                }
-                else if ($contents == null) {
-                    $output = $main->buildResponse("ZERO_RESULTS");
-                }
-                else {
-                    $output = $main->buildResponse("OK", array(
-                       "contents" => $contents 
-                    ));
-                }
+                $contents = $main->getFileManager()->openFile($user, $course, $project, $file);                
+                $output = $main->buildResponse(array(
+                    "contents" => $contents
+                ));                
             }
             // Save (overwrite the contents of) the specified file
             else if (!empty($_POST['saveFile'])) {
@@ -98,12 +71,12 @@
                     "ext" => $_POST['ext'],
                     "contents" => $_POST['contents']
                 );                
-                $success = $main->getFileManager()->saveFile($user, $course, $project, $file);
+                $success = $main->getFileManager()->saveFile($user, $course, $project, $file);                
                 if ($success) {
-                    $output = $main->buildResponse("OK");
+                    $output = $main->buildResponse();
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
+                    $output = $main->buildResponse(array(), "FAIL");
                 }
             }
             // Rename the specified file
@@ -123,17 +96,12 @@
                 if ($success) {                    
                     // Return the updated list of files
                     $files = $main->getFileManager()->getFiles($user, $course, $project);
-                    if ($files == null) {
-                        $output = $main->buildResponse("ZERO_RESULTS");    
-                    }
-                    else {                    
-                        $output = $main->buildResponse("OK", array(                                    
-                            "files" => $files
-                        ));
-                    }
+                    $output = $main->buildResponse(array(
+                       "files" => $files 
+                    ));                    
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
+                    $output = $main->buildResponse(array(), "FAIL");
                 }
             }
             // Create the specified file
@@ -150,17 +118,12 @@
                 if ($success) {                    
                     // Return the updated list of files
                     $files = $main->getFileManager()->getFiles($user, $course, $project);
-                    if ($files == null) {
-                        $output = $main->buildResponse("ZERO_RESULTS");    
-                    }
-                    else {                    
-                        $output = $main->buildResponse("OK", array(                                    
-                            "files" => $files
-                        ));
-                    }
+                    $output = $main->buildResponse(array(
+                       "files" => $files 
+                    )); 
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
+                    $output = $main->buildResponse(array(), "FAIL");
                 }
             }
             // Delete the specified file
@@ -176,45 +139,35 @@
                 if ($success) {                    
                     // Return the updated list of files
                     $files = $main->getFileManager()->getFiles($user, $course, $project);
-                    if ($files == null) {
-                        $output = $main->buildResponse("ZERO_RESULTS");    
-                    }
-                    else {                    
-                        $output = $main->buildResponse("OK", array(                                    
-                            "files" => $files
-                        ));
-                    }
+                    $output = $main->buildResponse(array(
+                       "files" => $files 
+                    )); 
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
+                    $output = $main->buildResponse(array(), "FAIL");
                 }
             }
             // Store the user's selected course in a cookie (overwrite)
             else if (!empty($_POST['course'])) {
                 setcookie('course', $_POST['course'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
-                $output = $main->buildResponse("OK");
+                $output = $main->buildResponse();
             }
             // Store the user's selected project in a cookie (overwrite)
             else if (!empty($_POST['project'])) {
                 setcookie('project', $_POST['project'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
-                $output = $main->buildResponse("OK");
+                $output = $main->buildResponse();
             }
             // Store the user's selected file in a cookie (overwrite)
             else if (!empty($_POST['file'])) {
                 setcookie('file', $_POST['file'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
-                $output = $main->buildResponse("OK");
+                $output = $main->buildResponse();
             }
             // Retrieve all application data for viewing in the administrative control panel
             else if (!empty($_POST['getAllUsers'])) {
                 $users = $main->getUserManager()->getUsers();
-                if ($users != null) {
-                    $output = $main->buildResponse("OK", array(
-                        "users" => $users
-                    ));
-                }
-                else {
-                    $output = $main->buildResponse("ZERO_RESULTS");
-                }
+                $output = $main->buildResponse(array(
+                    "users" => $users
+                ));                
             }
             // Create the specified user
             else if (!empty($_POST['newUser'])) {
@@ -229,10 +182,10 @@
                 );
                 $success = $main->getUserManager()->createUser($user);
                 if ($success) {
-                    $output = $main->buildResponse("OK");                
+                    $output = $main->buildResponse();
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
+                    $output = $main->buildResponse(array(), "FAIL");
                 }
             }
             // Edit the specified user
@@ -248,11 +201,11 @@
                 );
                 $success = $main->getUserManager()->editUser($user);
                 if ($success) {
-                    $output = $main->buildResponse("OK");                
+                    $output = $main->buildResponse();
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
-                }                
+                    $output = $main->buildResponse(array(), "FAIL");
+                }               
             }
             // Delete the specified user
             else if (!empty($_POST['deleteUser'])) {
@@ -262,27 +215,27 @@
                 );                
                 $success = $main->getUserManager()->deleteUser($user);
                 if ($success) {
-                    $output = $main->buildResponse("OK");
+                    $output = $main->buildResponse();
                 }
                 else {
-                    $output = $main->buildResponse("FAIL");
+                    $output = $main->buildResponse(array(), "FAIL");
                 }
             }
             // Default response: simply inform the client that the user is logged in
-            else if (!empty($_POST['validate'])) {                 
-                $output = $main->buildResponse("OK", $_COOKIE);
+            else if (!empty($_POST['validate'])) {                
+                $output = $main->buildResponse(array(), "VALIDATED");
             }                
         }
         // Else, authenticate the user
-        else {
+        else {            
             // Authentication failed
             if ((empty($_POST['username']) || empty($_POST['password'])) ||
                 !($main->authenticate($_POST['username'], $_POST['password']))) {
-                $output = $main->buildResponse("INTRUDER");            
+                $output = $main->buildResponse(array(), "INTRUDER");            
             }
             // Authentication succeeded!
             else {                                
-                $output = $main->buildResponse("OK");
+                $output = $main->buildResponse();
             }
         }
     }
@@ -341,11 +294,13 @@
             // Authenticate the user
             $user = mysql_real_escape_string($user);
             $pass = mysql_real_escape_string($pass);                                
-            $query = "SELECT * FROM Users WHERE user_id='" . $user . "' AND user_passhash='" . $pass . "' LIMIT 1;";                        
-            if (($result = $this->dbm->queryFetchAssoc($query)) == null) {
+            $query = "SELECT * FROM Users WHERE user_id='" . $user . "' AND user_passhash='" . $pass . "' LIMIT 1;";
+            $result = $this->dbm->query($query);
+            if (!$result) {
                 return false;
             }
             else {
+                $result = mysql_fetch_assoc($result);
                 // Create the session
                 $details = array(
                   "username" => $user,
@@ -385,7 +340,7 @@
          */
         public function logout () {            
             $this->destroySession();
-            return $this->buildResponse("LOGOUT");                    
+            return $this->buildResponse(array(), "LOGOUT");                    
         }
         
         /**
@@ -412,9 +367,10 @@
             * This handles any potential cookie injection.
             */
             else {                
-               $query = "SELECT * FROM Users WHERE user_id='" . $_COOKIE['username'] . "' AND user_passhash='" . $_COOKIE['password'] . "' LIMIT 1;";                        
-               if (($result = $this->dbm->queryFetchAssoc($query)) == null)
-                   $isLoggedIn = false;
+                $query = "SELECT * FROM Users WHERE user_id='" . $_COOKIE['username'] . "' AND user_passhash='" . $_COOKIE['password'] . "' LIMIT 1;";
+                if (!$this->dbm->queryFetchAssoc($query)) {
+                    $isLoggedIn = false;            
+                }                                                            
             }
                                                         
             return $isLoggedIn;
@@ -424,12 +380,40 @@
          * This method constructs a JSON response based on the input params and returns
          * it to the caller.This method is crucial for message passing to the client application.
          */
-        public function buildResponse ($status="OK", $params = array()) {            
+        public function buildResponse ($data=array(), $status=NULL) {
+            // Default: status = OK, no response data
             $output = array(
-                "status" => $status,
-                "data" => $params
+                "status" => "OK",
+                "data" => array()
             );
-
+            
+            // Handle the provided data
+            if (!empty($data)) {
+                //print_r($data);
+                $keys = array_keys($data);
+                $nKeys = count($keys);                
+                $compiledData = array();
+                for ($i = 0; $i < $nKeys; $i++) {
+                    $datum = $data[$keys[$i]];                    
+                    if ($datum == NULL) {
+                        $output['status'] = "FAIL";
+                        break;
+                    }
+                    else if ($datum === 0) { // Ensure to do a STRICT equality test
+                        $output['status'] = "ZERO_RESULTS";                        
+                        break;
+                    }
+                    else {                        
+                        $compiledData[$keys[$i]] = $datum;                        
+                    }
+                }
+                $output['data'] = $compiledData;
+            }
+            
+            // Prefer the provided status
+            if (!empty($status)) {
+                $output['status'] = $status;
+            }
             return json_encode($output);
         }
         
