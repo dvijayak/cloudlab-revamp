@@ -65,8 +65,21 @@
 		<div class="container-fluid">
 			<div class="row-fluid">						
 				<h3>
+					<script>
+						// Display the correct modal and its correct controls
+						$(function () {
+							$( "#new-user" ).click(function () {
+								$( "#newUserDialog #title" ).text("Create a new user");								
+								$( "#newUserDialog #id" ).removeAttr('disabled');
+								$( "#newUserDialog #username" ).removeAttr('disabled');
+								$( "#newUserDialog #create" ).show();
+								$( "#newUserDialog #update" ).hide();
+								$( "#newUserDialog" ).modal({keyboard:true});								
+							});
+						});
+					</script>
 					Users
-					<button id="new-user" class="btn btn-inverse" data-toggle="modal" href="#newUserDialog">New <i class="icon-plus icon-white"></i></button>
+					<button id="new-user" class="btn btn-inverse">New <i class="icon-plus icon-white"></i></button>
 				</h3>
 				<script>
 					// Refresh the Users table
@@ -90,7 +103,7 @@
 							var row = "<tr>";
 							
 							// Controls cell (contains buttons for manipulating the row)
-							var edit = "<button class='btn'><i class='icon-pencil'></i></button>",
+							var edit = "<button id='users-edit-" + users[i]['idnum'] + "' class='btn'><i class='icon-pencil'></i></button>",
 								del = "<button id='users-del-" + users[i]['idnum'] + "' class='btn btn-danger'><i class='icon-remove icon-white'></i></button>",
 								controls = "<td><div class='btn-group'>" + del + edit + "</div></td>";
 								
@@ -119,19 +132,36 @@
 									var data = "idnum=" + event.data.idnum + "&id=" + event.data.id + "&deleteUser=true";
 									console.log(event.data);
 									$.post(Util.ajax.url, data, function (output) {
+										// Refresh the Users table
+										refreshUsersTable();
 										if (output.status == "OK") {
 											alert("Deleted user " + event.data.idnum + " successfully.");
 										}
 										else {
 											alert("Attempt to delete user " + event.data.idnum + " failed!");
-										}
-										// Refresh the Users table
-										refreshUsersTable();
+										}										
 									}, Util.ajax.dataType);
 								}																
 							});
 							
-							// Edit user							
+							// Edit user
+							$( "#users-edit-" + users[i]['idnum'] ).click({user: users[i]}, function (event) {
+								console.log(event.data);
+								$( "#newUserDialog #title" ).text("Edit user (" + event.data.user['idnum'] + " " + event.data.user['id'] + ")");								
+								$( "#newUserDialog #id" ).attr('disabled', 'disabled');
+								$( "#newUserDialog #username" ).attr('disabled', 'disabled');
+								// Populate the input fields
+								$( "#newUserDialog #id" ).val(event.data.user['idnum']);
+								$( "#newUserDialog #username" ).val(event.data.user['id']);
+								$( "#newUserDialog #password" ).val("");
+								$( "#newUserDialog #firstname" ).val(event.data.user['fname']);
+								$( "#newUserDialog #lastname" ).val(event.data.user['lname']);
+								$( "#newUserDialog #email" ).val(event.data.user['email']);
+								$( "#newUserDialog #role" ).val(event.data.user['role']);
+								$( "#newUserDialog #update" ).show();
+								$( "#newUserDialog #create" ).hide();
+								$( "#newUserDialog" ).modal({keyboard:true});																								
+							});
 						}					
 	
 					};													
@@ -185,14 +215,14 @@
 		<div id="newUserDialog" class="modal hide fade in" aria-hidden="true">
 			<div class="modal-header">
 				<a class="close" data-dismiss="modal" href="#">&times;</a>
-				<h3>Create a new user</h3>
+				<h3 id="title"></h3>
 			</div>
 			<div class="modal-body">								
 				<form id="user" class="form-horizontal">
 					<div class="control-group">
 						<label class="control-label" for="id">Student &#35;</label>
 						<div class="controls">
-							<input id="id" type="text" placeholder="7-digit student number">
+							<input id="id" type="text" class="uneditable-input" placeholder="7-digit student number">
 						</div>
 					</div>
 					
@@ -204,7 +234,7 @@
 					</div>
 					
 					<div class="control-group">
-						<label class="control-label" for="password">Password</label>
+						<label class="control-label" for="password">Password (unhashed)</label>
 						<div class="controls">
 							<input id="password" type="password" placeholder="Password">
 						</div>
@@ -260,14 +290,33 @@
 							+ "&role=" + user['role'] + "&newUser=true";
 						
 						$.post(Util.ajax.url, data, function (output) {
+							// Refresh the Users table
+							refreshUsersTable();
 							if (output.status == "OK") {																																
 								alert("Created user " + userinfo + " successfully.");
 							}
 							else {
 								alert("Attempt to create user " + userinfo + " failed!");
-							}
+							}							
+						}, Util.ajax.dataType);
+					};
+					
+					// Edit the specified user
+					var editUser = function (user) {
+						var userinfo = user['idnum'] + ", " + user['id'] + ", " + user['fname'] + " " + user['lname'];
+						var data = "idnum=" + user['idnum'] + "&id=" + user['id'] + "&passhash=" + user['passhash']
+							+ "&fname=" + user['fname'] + "&lname=" + user['lname'] + "&email=" + user['email']
+							+ "&role=" + user['role'] + "&editUser=true";
+							
+						$.post(Util.ajax.url, data, function (output) {
 							// Refresh the Users table
 							refreshUsersTable();
+							if (output.status == "OK") {																																
+								alert("Saved changes for user " + userinfo + " successfully.");
+							}
+							else {
+								alert("Attempt to update user " + userinfo + " failed!");
+							}							
 						}, Util.ajax.dataType);
 					}
 					
@@ -285,9 +334,25 @@
 							};
 							newUser(user);
 						});
-					})					
+						
+						$( "#newUserDialog #update" ).click(function () {
+							if (confirm("Are you sure you want to update user " + $( "#newUserDialog #username" ).val() + "?")) {
+								var user = {
+									"idnum" : $( "#newUserDialog #id" ).val(),
+									"id" : $( "#newUserDialog #username" ).val(),
+									"passhash" : CryptoJS.MD5(String($("#newUserDialog #password").val())),
+									"fname" : $("#newUserDialog #firstname").val(),
+									"lname" : $("#newUserDialog #lastname").val(),
+									"email" : $("#newUserDialog #email").val(),
+									"role" : $("#newUserDialog #role").val()
+								};
+								editUser(user);
+							}
+						});
+					});
 				</script>	
 				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Create</button>
+				<button id="update" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Update</button>
 				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
 			</div>	
 		</div>
@@ -296,7 +361,7 @@
 		<div id="newCourseDialog" class="modal hide fade in" aria-hidden="true">
 			<div class="modal-header">
 				<a class="close" data-dismiss="modal" href="#">&times;</a>
-				<h3>Create a new course</h3>
+				<h3 id="title"></h3>
 			</div>
 			<div class="modal-body">								
 				<form id="course" class="form-horizontal">

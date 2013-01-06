@@ -102,18 +102,23 @@ io.sockets.on('connection', function (socket) {
 			console.log("Compiling " + file + "...");
 			// I could have set file = COMPILE_PATH + .... in the first place, but I want to avoid any potential future parsing
 			var child = exec(command + " " + (COMPILE_PATH + "/" + file) + " -o " + (COMPILE_PATH + "/" + file) + ".out -Wall -pedantic", function (error, stdout, stderr) {
-				var stdoutput = ((stdout) ? stdout : "No output"),
-					stderror = ((stderr) ? stderr : "No compilation issues!");
+				var stdoutput = ((stdout) ? stdout : "No output\n"),
+					stderror = ((stderr) ? stderr : "No compilation issues!\n");
+				//var stdoutput = stdout,
+				//	stderror = stderr;
 				console.log("STDOUT: " + stdoutput);
 				console.log("STDERR: " + stderror);
 				console.log("Compilation complete.");
 				
-				// Emit the compilation log to the client							
+				// Emit the compilation log to the client				
 				socket.emit('output', stderror);
 				
 				// If a function is provided, execute the file
 				if (execute !== undefined) {
-					run(input);
+					// Only execute the file if compilation succeeded
+					if (!stderr) {
+						run(input);	
+					}
 				}
 			});
 						
@@ -133,8 +138,10 @@ io.sockets.on('connection', function (socket) {
 			if (exists) {					
 				console.log("Executing " + file + "...");					
 				var child = exec("./" + COMPILE_PATH + "/" + file + ".out", function (error, stdout, stderr) {
-					var stdoutput = ((stdout) ? stdout : "No output"),
-						stderror = ((stderr) ? stderr : "No runtime issues!");
+					var stdoutput = ((stdout) ? stdout : "No output\n"),
+						stderror = ((stderr) ? stderr : "No runtime issues!\n");
+					//var stdoutput = stdout,
+					//	stderror = stderr;
 					console.log("STDOUT: " + stdoutput);
 					console.log("STDERR: " + stderror);
 					console.log("Execution complete.");

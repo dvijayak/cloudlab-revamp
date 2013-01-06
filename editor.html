@@ -698,16 +698,13 @@
 					// If the response is valid JSON, it is runtime output
 					try {
 						changeStatus(StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
-						var jsonData = JSON.parse(data);
-						EM.appendValue("Runtime output:\n" +
-							jsonData.stderr + "\n\nProgram output:\n" +
-							jsonData.stdout + "\n===================\n", EM.terminal); // cursorPos: 0 or undefined is at the beginning; 1 is at the end
+						var jsonData = JSON.parse(data);						
+						EM.appendValue(jsonData.stderr + "===========\n" + jsonData.stdout, EM.terminal);
 					}
 					// else, it is compiler output
 					catch (e) {
 						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
-						EM.appendValue("Compiler output:\n" +
-							data + "\n===================\n", EM.terminal); // cursorPos: same as above
+						EM.appendValue(data, EM.terminal);
 					}
 					
 				});

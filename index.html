@@ -57,7 +57,7 @@
 						var url = Util.urls.php.main,
 							data = "username=" + $( "#username" ).val() + "&password=" + CryptoJS.MD5($( "#password" ).val()),
 							success = function (output) {								
-								if (output.status == "OK") {
+								if (output.status == "OK") {                                    
 									var cookies = Util.cookiesToArray();	
 									if (cookies['role'] == "3") {
 										window.location.href="admin.html";

@@ -229,14 +229,15 @@
         // Else, authenticate the user
         else {            
             // Authentication failed
-            if ((empty($_POST['username']) || empty($_POST['password'])) ||
-                !($main->authenticate($_POST['username'], $_POST['password']))) {
+            $success = $main->authenticate($_POST['username'], $_POST['password']);
+            if ((empty($_POST['username']) || empty($_POST['password']))
+                || $success === 0 || !$success) {
                 $output = $main->buildResponse(array(), "INTRUDER");            
             }
             // Authentication succeeded!
             else {                                
                 $output = $main->buildResponse();
-            }
+            }            
         }
     }
     
@@ -298,6 +299,9 @@
             $result = $this->dbm->query($query);
             if (!$result) {
                 return false;
+            }
+            else if (mysql_num_rows($result) == 0) {
+                return 0;
             }
             else {
                 $result = mysql_fetch_assoc($result);
