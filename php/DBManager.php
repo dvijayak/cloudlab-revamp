@@ -39,7 +39,7 @@
         
         public function query ($query) {
             if (!($result = mysql_query($query))) {
-                $this->result = null;                
+                $this->result = false;                
             }
             else {
                 $this->result = mysql_query($query, $this->link);

@@ -5,22 +5,41 @@
 		<meta name="viewport" id="viewport" content="height=device-height,width=device-width,user-scalable=no" />
 		<title>Cloud Lab: Admin Panel</title>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="http://crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js"></script>
 		<script src="js/util.js"></script>
 		<script>
-			$(function () {								
+			$(function () {
+				var data = "getAllUsers=true";
 				// Always validate session on page load
-				Util.validateSession();				
+				Util.validateSession(function (output) {
+					if (output.status == "OK") {
+						// Populate the users table
+						populateUsersTable(output.data.users);
+						
+						// Populate the courses table
+						//var data = "getAllCourses=true";
+						//$.post(Util.ajax.url, data, function(output) {
+						//	if (output.status == "OK") {								
+						//		populateCoursesTable(output.data.courses);
+						//	}
+						//}, Util.ajax.dataType);
+					}
+				}, data);				
 			});
+							
 		</script>
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
         <script src="js/bootstrap.min.js"></script>
         <!--------------->
+		<link href="css/general.css" rel="stylesheet">
 		<style>
 			body { padding-top: 60px; }
-		</style>
-		<link rel="stylesheet" href="//code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+			
+			table td {
+				font-family: monospace;
+			}
+		</style>		
 	</head>
 
 	<body>				
@@ -31,9 +50,10 @@
 				</div>
 				<ul class="nav">					
 					<li>
-						<p class="navbar-text">Administrator Control Panel</p>
-					</li>					
+						<p class="navbar-text">Control Panel</p>
+					</li>
 				</ul>
+				
 				<div class="pull-right">
 					<ul class="nav">
 						<li>
@@ -43,136 +63,273 @@
 					<a id="logout" class="btn btn-danger" href="#">Logout</a>					
 				</div>
 			</div>			
-		</div>	
+		</div>
 
-		<div id="centerContainer">
-			<script>
-				$(function () {
-					$( "#admin_panelsAccordion" ).accordion();
-				});
-			</script>
-			<div id="admin_panelsAccordion">
-				<h3>Users</h3>
-				<div>					
-					<table>
-						<tr>
-							<th>User</th>
-							<th>Role</th>
-							<th>Date Created</th>
-						</tr>	
-					</table>
-					<div id="admin_accordionPanels_footer">
-						<input name="addedituser" type="button" value="Add+"/> <!-- TODO: Add a + icon .png -->
-						<input name="addedituser" type="button" value="Edit"/>
-						<input type="button" value="Delete"/>
-					</div>
-				</div>
-				<h3>Courses</h3>
-				<div>					
-					<table>
-						<tr>
-							<th>Course</th>							
-							<th>Expiry</th>
-						</tr>	
-					</table>
+		<div class="container-fluid">
+			<div class="row-fluid">						
+				<h3>
+					Users
+					<button id="new-user" class="btn btn-inverse" data-toggle="modal" href="#newUserDialog">New <i class="icon-plus icon-white"></i></button>
+				</h3>
+				<script>
+					// Refresh the Users table
+					var refreshUsersTable = function () {						
+						var data = "getAllUsers=true";
+						$.post(Util.ajax.url, data, function (output) {
+							populateUsersTable(output.data.users);
+						}, Util.ajax.dataType);
+					}										
+					
+					// Populate the users table
+					var populateUsersTable = function (users) {
+						// Reset the table
+						$( "#users-table" ).empty();
+						var n = users.length;
+						for (var i = 0; i < n; i++) {
+							// Create a row for each user in the table
+							var row = "<tr>";
+							
+							// Controls cell (contains buttons for manipulating the row)
+							var edit = "<button class='btn'><i class='icon-pencil'></i></button>",
+								del = "<button id='users-del-" + users[i]['idnum'] + "' class='btn btn-danger'><i class='icon-remove icon-white'></i></button>",
+								controls = "<td><div class='btn-group'>" + del + edit + "</div></td>";
+								
+							// Data cells
+							var idnum = "<td>" + users[i]['idnum'] + "</td>",
+								id = "<td>" + users[i]['id'] + "</td>",
+								passhash = "<td>" + users[i]['passhash'] + "</td>",
+								fname = "<td>" + users[i]['fname'] + "</td>",
+								lname = "<td>" + users[i]['lname'] + "</td>",
+								email = "<td>" + users[i]['email'] + "</td>",
+								role = "<td>" + users[i]['role'] + "</td>";
+								
+							// Complete the row
+							row += controls + idnum + id + passhash + fname + lname + email + role /*+ controls*/
+									+ "/tr>";
 
-					<div id="admin_accordionPanels_footer">
-						<input name="addeditcourse" type="button" value="Add+"/> <!-- TODO: Add a + icon .png -->
-						<input name="addeditcourse" type="button" value="Edit"/>
-						<input type="button" value="Delete"/>
-					</div>
-				</div>
+							// Append the row to the table
+							$( "#users-table" ).append(row);
+							
+							/* Assign click function to control buttons to work with their own row */
+							
+							// Delete user
+							$( "#users-del-" + users[i]['idnum'] ).click({idnum: users[i]['idnum'], id: users[i]['id']}, function (event) {
+								console.log(event.data);
+								if (confirm("Are you sure you want to delete user " + event.data.idnum + "? (WARNING: This will also delete all the user's files)")) {
+									var data = "idnum=" + event.data.idnum + "&id=" + event.data.id + "&deleteUser=true";
+									console.log(event.data);
+									$.post(Util.ajax.url, data, function (output) {
+										if (output.status == "OK") {
+											alert("Created user " + event.data.idnum + " successfully.");
+										}
+										else {
+											alert("Attempt to delete user " + event.data.idnum + " failed!");
+										}
+										// Refresh the Users table
+										refreshUsersTable();
+									}, Util.ajax.dataType);
+								}																
+							});
+							
+							// Edit user
+						}					
+	
+					};													
+				</script>
+				<table id="users-table" class="table table-striped">
+					<tr>
+						<th></th>
+						<th>&#35;</th>
+						<th>Username</th>
+						<th>Password (Hashed)</th>
+						<th>First Name</th>
+						<th>Last Name</th>
+						<th>E-mail</th>
+						<th>Role</th>
+						<th></th>
+					</tr>
+				</table>
+			</div>
+			<div class="row-fluid">
+				<h3>
+					Courses
+					<button id="new-course" class="btn btn-inverse" data-toggle="modal" href="#newCourseDialog">New <i class="icon-plus icon-white"></i></button>
+				</h3>
+				<script>
+					// Refresh the courses table
+					var refreshCoursesTable = function () {						
+						var data = "getAllCourses=true";
+						$.post(Util.ajax.url, data, function (output) {
+							populateUsersTable(output.data.courses);
+						}, Util.ajax.dataType);
+					}					
+					
+					// Populate the courses table
+					var populateCoursesTable = function (courses) {
+						
+					};
+				</script>				
+				<table id="courses-table" class="table table-striped">
+					<tr>
+						<th></th>
+						<th>ID</th>
+						<th>Name/Title</th>
+						<th>Student Count</th>
+						<th>Description</th>						
+					</tr>	
+				</table>					
 			</div>
 		</div>
-
-		<div id="admin_userDialog" title="Create new/Edit existing user">
-			<script>
-				$(function () {
-					$( "[name='addedituser']" ).click(function () {
-						$( "#admin_userDialog" ).dialog( "open" );
-					});										
-
-					$( "#admin_userDialog" ).dialog({
-						autoOpen: false,						
-						modal: true,
-						buttons: {
-							"Done" : function () {
-								var username = $( "#username" ).val(),
-									password = $( "#password").val(),
-									role = $( "[name='role']" ).val();
-								alert(username + " " + password + " " + role);
-								$( this ).dialog( "close" );
-							},
-							"Cancel" : function () {
-								$( this ).dialog( "close" );
+		
+		<!-- New user -->
+		<div id="newUserDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Create a new user</h3>
+			</div>
+			<div class="modal-body">								
+				<form id="user" class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="id">Student &#35;</label>
+						<div class="controls">
+							<input id="id" type="text" placeholder="7-digit student number">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="username">Username</label>
+						<div class="controls">
+							<input id="username" type="text" placeholder="Username">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="password">Password</label>
+						<div class="controls">
+							<input id="password" type="password" placeholder="Password">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="firstname">First name</label>
+						<div class="controls">
+							<input id="firstname" type="text" placeholder="First name">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="lastname">Last name</label>
+						<div class="controls">
+							<input id="lastname" type="text" placeholder="Last name">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="email">E-mail</label>
+						<div class="controls">
+							<input id="email" type="email" placeholder="E-mail address">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="role">Role</label>
+						<div class="controls">
+							<select id="role">
+								<option value="1">Student</option>
+								<option value="2">Instructor</option>								
+							</select>
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="enroll">Enroll in</label>
+						<div class="controls">
+							<select id="enroll">								
+							</select>
+						</div>
+					</div>
+				</form>				
+			</div>
+			<div class="modal-footer">
+				<script>
+					// Create the specified user
+					var newUser = function (user) {
+						var userinfo = user['idnum'] + ", " + user['id'] + ", " + user['fname'] + " " + user['lname'];
+						var data = "idnum=" + user['idnum'] + "&id=" + user['id'] + "&passhash=" + user['passhash']
+							+ "&fname=" + user['fname'] + "&lname=" + user['lname'] + "&email=" + user['email']
+							+ "&role=" + user['role'] + "&newUser=true";
+						
+						$.post(Util.ajax.url, data, function (output) {
+							if (output.status == "OK") {																																
+								alert("Created user " + userinfo + " successfully.");
 							}
-						}
-					})
-				});
-			</script>
-			<form>
-				<fieldset>
-					<legend>Create/Edit User</legend>
-					<label for="username">Username</label> 
-					<input id="username" type="text" value="test1" />
+							else {
+								alert("Attempt to create user " + userinfo + " failed!");
+							}
+							// Refresh the Users table
+							refreshUsersTable();
+						}, Util.ajax.dataType);
+					}
+					
+					$(function () {
+						$( "#newUserDialog #create" ).click(function () {
 
-					<label for="password">Password</label>
-					<input id="password" type="password" value="test1" />
-
-					<fieldset>
-					<legend>User Role</legend>
-						<ul id="role">
-							<li>
-								<input name="role" type="radio" value="student" checked="checked">Student</input>
-							</li>
-							<li>
-								<input name="role" type="radio" value="instructor">Instructor</input>
-							</li>
-							<li>
-								<input name="role" type="radio" value="admin">Administrator</input>
-							</li>
-						</ul>
-					</fieldset>					
-				</fieldset>				
-			</form>
+							var user = {
+								"idnum" : $( "#newUserDialog #id" ).val(),
+								"id" : $( "#newUserDialog #username" ).val(),
+								"passhash" : CryptoJS.MD5(String($("#newUserDialog #password").val())),
+								"fname" : $("#newUserDialog #firstname").val(),
+								"lname" : $("#newUserDialog #lastname").val(),
+								"email" : $("#newUserDialog #email").val(),
+								"role" : $("#newUserDialog #role").val()
+							};
+							newUser(user);
+						});
+					})					
+				</script>	
+				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Create</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>	
 		</div>
 
-		<div id="admin_courseDialog" title="Create new/Edit existing course">
-			<script>
-				$(function () {
-					$( "[name='addeditcourse']" ).click(function () {
-						$( "#admin_courseDialog" ).dialog( "open" );
-					});										
-
-					$( "#admin_courseDialog" ).dialog({
-						autoOpen: false,						
-						modal: true,
-						buttons: {
-							"Done" : function () {
-								var coursename = $( "#coursename" ).val(),						
-									instructor = $( "#instructor:selected" ).val();									
-								alert(coursename + " " + instructor);
-								$( this ).dialog( "close" );
-							},
-							"Cancel" : function () {
-								$( this ).dialog( "close" );
-							}
-						}
-					})
-				});
-			</script>			
-			<form>
-				<fieldset>
-					<legend>Create/Edit Course</legend>
-					<label for="coursename">Course Name</label>
-					<input id="coursename" type="text" value="cis4410" />
-
-					<label for="instructor">Course Instructor</label>
-					<select id="instructor">						
-					</select>
-				</fieldset>				
-			</form>			
+		<!-- New course -->
+		<div id="newCourseDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Create a new course</h3>
+			</div>
+			<div class="modal-body">								
+				<form id="course" class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="id">Course ID</label>
+						<div class="controls">
+							<input id="id" type="text" placeholder="Course code">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="name">Name/Title</label>
+						<div class="controls">
+							<input id="name" type="text" placeholder="Course name/title">
+						</div>
+					</div>
+					
+					<div class="control-group">
+						<label class="control-label" for="description">Description</label>
+						<div class="controls">
+							<textarea id="description" rows="5" maxlength="1000" placeholder="Enter a brief description for the course (max 1000 characters)"></textarea>
+						</div>
+					</div>				
+				</form>
+				
+			</div>
+			<div class="modal-footer">
+				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true" >Create</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>	
 		</div>
+		
+		
 
 	</body>	
 </html>

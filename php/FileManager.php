@@ -6,7 +6,7 @@
         private $dbm;
         private $defaults;
         
-        function __construct($dbm) {
+        public function __construct($dbm) {
             //$this->s3 = new AmazonS3();
             $this->dbm = $dbm;
             

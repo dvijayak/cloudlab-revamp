@@ -204,6 +204,70 @@
                 setcookie('file', $_POST['file'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
                 $output = $main->buildResponse("OK");
             }
+            // Retrieve all application data for viewing in the administrative control panel
+            else if (!empty($_POST['getAllUsers'])) {
+                $users = $main->getUserManager()->getUsers();
+                if ($users != null) {
+                    $output = $main->buildResponse("OK", array(
+                        "users" => $users
+                    ));
+                }
+                else {
+                    $output = $main->buildResponse("ZERO_RESULTS");
+                }
+            }
+            // Create the specified user
+            else if (!empty($_POST['newUser'])) {
+                $user = array(
+                    "idnum" => $_POST['idnum'],
+                    "id" => $_POST['id'],
+                    "passhash" => $_POST['passhash'],
+                    "fname" => $_POST['fname'],
+                    "lname" => $_POST['lname'],
+                    "email" => $_POST['email'],
+                    "role" => $_POST['role']
+                );
+                $success = $main->getUserManager()->createUser($user);
+                if ($success) {
+                    $output = $main->buildResponse("OK");                
+                }
+                else {
+                    $output = $main->buildResponse("FAIL");
+                }
+            }
+            // Edit the specified user
+            else if (!empty($_POST['editUser'])) {
+                $user = array(
+                    "idnum" => $_POST['idnum'],
+                    "id" => $_POST['id'],
+                    "passhash" => $_POST['passhash'],
+                    "fname" => $_POST['fname'],
+                    "lname" => $_POST['lname'],
+                    "email" => $_POST['email'],
+                    "role" => $_POST['role']
+                );
+                $success = $main->getUserManager()->editUser($user);
+                if ($success) {
+                    $output = $main->buildResponse("OK");                
+                }
+                else {
+                    $output = $main->buildResponse("FAIL");
+                }                
+            }
+            // Delete the specified user
+            else if (!empty($_POST['deleteUser'])) {
+                $user = array(
+                    "idnum" => $_POST['idnum'],
+                    "id" => $_POST['id']
+                );                
+                $success = $main->getUserManager()->deleteUser($user);
+                if ($success) {
+                    $output = $main->buildResponse("OK");
+                }
+                else {
+                    $output = $main->buildResponse("FAIL");
+                }
+            }
             // Default response: simply inform the client that the user is logged in
             else if (!empty($_POST['validate'])) {                 
                 $output = $main->buildResponse("OK", $_COOKIE);
@@ -233,6 +297,7 @@
         
         private $paths;        
         private $dbm; // Database Manager
+        private $um;  // User Manager
         private $cm;  // Course Manager
         private $pm;  // Project Manager
         private $fm;  // File Manager
@@ -251,6 +316,9 @@
                         
             require_once ("DBManager.php");
             $this->dbm = new DBManager();
+            
+            require_once ("UserManager.php");
+            $this->um = new UserManager($this->dbm);
                         
             require_once ("CourseManager.php");
             $this->cm = new CourseManager($this->dbm);            
@@ -367,6 +435,10 @@
         
         /* Accessors */
         
+        public function getUserManager () {
+            return $this->um;
+        }
+        
         public function getCourseManager () {
             return $this->cm;
         }
@@ -377,7 +449,7 @@
         
         public function getFileManager () {
             return $this->fm;
-        }
+        }                
         
         public function getPaths () {
             return $this->paths;
