@@ -15,10 +15,8 @@
 				Util.validateSession(function (output) {
 						if (output.status == "OK") {
 							// Generate list of courses for the user
-							var courses = output.data.courses;
-							console.log(courses);
-							var nCourses = courses.length;
-							console.log(nCourses);
+							var courses = output.data.courses;							
+							var nCourses = courses.length;							
 							for (var i = 0; i < nCourses; i++) {								
 								// Create the UI elements
 								/* Note: by passing a data map to the click handler, we preserve the value of courses[i].

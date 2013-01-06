@@ -31,24 +31,29 @@ function Util () {
     if (window.sessionStorage) {
         /* Stack-based implementation (using array) of the back function */        
         if (!sessionStorage.stack) {
-            sessionStorage.stack = new Array();            
+            sessionStorage.stack = JSON.stringify(new Array());
         }
         this.back = new Array();
         // Push the currently landed page on to the stack
         this.back.add = function () {
-            var current = window.location.pathname;    
-            sessionStorage.stack.push(current);
-            alert("Pushed " + current);
+            var current = window.location.pathname;
+            var stack = JSON.parse(sessionStorage.stack); // Note that you need to wrap Web Storage objects as JSON strings to work with them
+            // Prevents repetitions of the same page
+            if (stack[stack.length - 1] != current) {
+                stack.push(current);
+            }            
+            sessionStorage.stack = JSON.stringify(stack);
+            // Debugging purposes
+            console.log(sessionStorage.stack);
         };
         // Go to the previous page by popping the current page from the stack
         this.back.go = function () {
-            var current = sessionStorage.stack.pop();
-            alert("Popped " + current);
-            var prev = sessionStorage.stack.pop();
-            alert("Popped " + prev);
-            sessionStorage.stack.push(prev);
-            alert("Pushed " + prev);
-            window.location.href = prev;
+            var stack = JSON.parse(sessionStorage.stack);
+            var current = stack.pop();            
+            var prev = stack.pop();                
+            stack.push(prev);            
+            sessionStorage.stack = JSON.stringify(stack);            
+            window.location.href = prev;            
         };            
     }
     else {
