@@ -17,12 +17,12 @@
 						populateUsersTable(output.data.users);
 						
 						// Populate the courses table
-						//var data = "getAllCourses=true";
-						//$.post(Util.ajax.url, data, function(output) {
-						//	if (output.status == "OK") {								
-						//		populateCoursesTable(output.data.courses);
-						//	}
-						//}, Util.ajax.dataType);
+						var data = "getAllCourses=true";
+						$.post(Util.ajax.url, data, function(output) {
+							if (output.status == "OK") {								
+								populateCoursesTable(output.data.courses);
+							}
+						}, Util.ajax.dataType);
 					}
 				}, data);				
 			});
@@ -72,6 +72,14 @@
 								$( "#newUserDialog #title" ).text("Create a new user");								
 								$( "#newUserDialog #id" ).removeAttr('disabled');
 								$( "#newUserDialog #username" ).removeAttr('disabled');
+								// Reset the input fields
+								$( "#newUserDialog #id" ).val("");
+								$( "#newUserDialog #username" ).val("");
+								$( "#newUserDialog #password" ).val("");
+								$( "#newUserDialog #firstname" ).val("");
+								$( "#newUserDialog #lastname" ).val("");
+								$( "#newUserDialog #email" ).val("");
+								$( "#newUserDialog #role" ).val(1);
 								$( "#newUserDialog #create" ).show();
 								$( "#newUserDialog #update" ).hide();
 								$( "#newUserDialog" ).modal({keyboard:true});								
@@ -183,7 +191,23 @@
 			<div class="row-fluid">
 				<h3>
 					Courses
-					<button id="new-course" class="btn btn-inverse" data-toggle="modal" href="#newCourseDialog">New <i class="icon-plus icon-white"></i></button>
+					<button id="new-course" class="btn btn-inverse">New <i class="icon-plus icon-white"></i></button>
+					<script>
+						// Display the correct modal and its correct controls
+						$(function () {
+							$( "#new-course" ).click(function () {
+								$( "#newCourseDialog #title" ).text("Create a new course");								
+								$( "#newCourseDialog #id" ).removeAttr('disabled');
+								// Reset the input fields
+								$( "#newCourseDialog #id" ).val("");
+								$( "#newCourseDialog #name" ).val("");
+								$( "#newCourseDialog #description" ).val("");
+								$( "#newCourseDialog #create" ).show();
+								$( "#newCourseDialog #update" ).hide();
+								$( "#newCourseDialog" ).modal({keyboard:true});								
+							});
+						});
+					</script>					
 				</h3>
 				<script>
 					// Refresh the courses table
@@ -196,7 +220,69 @@
 					
 					// Populate the courses table
 					var populateCoursesTable = function (courses) {
-						
+						// Reset the table
+						$( "#courses-table" ).empty();
+						$( "<tr><th></th><th>ID</th><th>Name/Title</th><th>Head Count</th>" +
+						  "<th>Description</th></tr>" ).appendTo($ ( "#courses-table" ));
+						var n = courses.length;
+						for (var i = 0; i < n; i++) {
+							// Create a row for each user in the table
+							var row = "<tr>";
+							
+							// Controls cell (contains buttons for manipulating the row)
+							var edit = "<button id='courses-edit-" + courses[i]['id'] + "' class='btn'><i class='icon-pencil'></i></button>",
+								del = "<button id='courses-del-" + courses[i]['id'] + "' class='btn btn-danger'><i class='icon-remove icon-white'></i></button>",
+								controls = "<td><div class='btn-group'>" + del + edit + "</div></td>";
+								
+							// Data cells
+							var id = "<td>" + courses[i]['id'] + "</td>",
+								name = "<td>" + courses[i]['name'] + "</td>",
+								heads = "<td>" + courses[i]['heads'] + "</td>",
+								description = "<td>" + courses[i]['description'] + "</td>";
+								
+							// Complete the row
+							row += controls + id + name + heads + description /*+ controls*/
+									+ "/tr>";
+
+							// Append the row to the table
+							$( "#courses-table" ).append(row);
+							
+							/* Assign click function to control buttons to work with their own row */
+							
+							// Delete course
+							$( "#courses-del-" + courses[i]['id'] ).click({course: courses[i]}, function (event) {
+								console.log(event.data);
+								if (confirm("Are you sure you want to delete course " + event.data.course['id'] + " " + event.data.course['name'] +
+											"? (WARNING: This will delete all associations to this course including files and projects! Proceed with caution!)")) {
+									var data = "id=" + event.data.course['id'] + "&deleteCourse=true";
+									console.log(event.data);
+									$.post(Util.ajax.url, data, function (output) {
+										// Refresh the Courses table
+										refreshCoursesTable();
+										if (output.status == "OK") {
+											alert("Deleted course " + event.data.idnum + " successfully.");
+										}
+										else {
+											alert("Attempt to delete course " + event.data.idnum + " failed!");
+										}										
+									}, Util.ajax.dataType);
+								}																
+							});
+							
+							// Edit course
+							$( "#courses-edit-" + courses[i]['id'] ).click({course: courses[i]}, function (event) {
+								console.log(event.data);
+								$( "#newCourseDialog #title" ).text("Edit course (" + event.data.course['id'].toUpperCase() + ")");								
+								$( "#newCourseDialog #id" ).attr('disabled', 'disabled');								
+								// Populate the input fields
+								$( "#newCourseDialog #id" ).val(event.data.course['id']);
+								$( "#newCourseDialog #name" ).val(event.data.course['name']);
+								$( "#newCourseDialog #description" ).val(event.data.course['description']);
+								$( "#newCourseDialog #update" ).show();
+								$( "#newCourseDialog #create" ).hide();
+								$( "#newCourseDialog" ).modal({keyboard:true});																								
+							});
+						}
 					};
 				</script>				
 				<table id="courses-table" class="table table-striped">
@@ -204,7 +290,7 @@
 						<th></th>
 						<th>ID</th>
 						<th>Name/Title</th>
-						<th>Student Count</th>
+						<th>Head Count</th>
 						<th>Description</th>						
 					</tr>	
 				</table>					
@@ -384,12 +470,81 @@
 						<div class="controls">
 							<textarea id="description" rows="5" maxlength="1000" placeholder="Enter a brief description for the course (max 1000 characters)"></textarea>
 						</div>
-					</div>				
+					</div>
+
+					<div class="control-group">
+						<label class="control-label" for="enroll">Enroll in</label>
+						<div class="controls">
+							<select id="enroll">								
+							</select>
+						</div>
+					</div>					
 				</form>
 				
 			</div>
 			<div class="modal-footer">
+				<script>
+					// Create the specified course
+					var newCourse = function (course) {
+						var courseinfo = course['id'] + ", " + course['name'];
+						var data = "id=" + course['id'] + "&name=" + course['name'] +
+							"&description=" + course['description'] + "&newCourse=true";
+						
+						$.post(Util.ajax.url, data, function (output) {
+							// Refresh the Courses table
+							refreshCoursesTable();
+							if (output.status == "OK") {																																
+								alert("Created course " + courseinfo + " successfully.");
+							}
+							else {
+								alert("Attempt to create course " + courseinfo + " failed!");
+							}							
+						}, Util.ajax.dataType);
+					};
+					
+					// Edit the specified course
+					var editCourse = function (course) {
+						var courseinfo = course['id'] + ", " + course['name'];
+						var data = "id=" + course['id'] + "&name=" + course['name'] +
+							"&description=" + course['description'] + "&editCourse=true";
+							
+						$.post(Util.ajax.url, data, function (output) {
+							// Refresh the Courses table
+							refreshCoursesTable();
+							if (output.status == "OK") {																																
+								alert("Saved changes for course " + courseinfo + " successfully.");
+							}
+							else {
+								alert("Attempt to update course " + courseinfo + " failed!");
+							}							
+						}, Util.ajax.dataType);
+					}
+					
+					$(function () {
+						$( "#newCourseDialog #create" ).click(function () {
+
+							var course = {
+								"id" : $( "#newCourseDialog #id" ).val(),								
+								"name" : $("#newCourseDialog #name").val(),
+								"description" : $("#newCourseDialog #description").val()								
+							};
+							newCourse(course);
+						});
+						
+						$( "#newCourseDialog #update" ).click(function () {
+							if (confirm("Are you sure you want to update course " + $( "#newCourseDialog #id" ).val() + "?")) {
+								var course = {
+									"id" : $( "#newCourseDialog #id" ).val(),								
+									"name" : $("#newCourseDialog #name").val(),
+									"description" : $("#newCourseDialog #description").val()
+								};
+								editCourse(course);
+							}
+						});
+					});
+				</script>	
 				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true" >Create</button>
+				<button id="update" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Update</button>
 				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
 			</div>	
 		</div>

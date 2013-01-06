@@ -162,7 +162,7 @@
                 setcookie('file', $_POST['file'], time()+3600, $main->getPaths()->root, $main->getPaths()->domain);
                 $output = $main->buildResponse();
             }
-            // Retrieve all application data for viewing in the administrative control panel
+            // Retrieve all users that exist in the system
             else if (!empty($_POST['getAllUsers'])) {
                 $users = $main->getUserManager()->getUsers();
                 $output = $main->buildResponse(array(
@@ -221,6 +221,56 @@
                     $output = $main->buildResponse(array(), "FAIL");
                 }
             }
+            // Retrieve all courses that exist in the system
+            else if (!empty($_POST['getAllCourses'])) {
+                $courses = $main->getCourseManager()->getCourses();
+                $output = $main->buildResponse(array(
+                    "courses" => $courses
+                ));                
+            }
+            // Create the specified course
+            else if (!empty($_POST['newCourse'])) {
+                $course = array(                    
+                    "id" => $_POST['id'],                    
+                    "name" => $_POST['name'],
+                    "description" => $_POST['description']
+                );
+                $success = $main->getCourseManager()->createCourse($course);
+                if ($success) {
+                    $output = $main->buildResponse();
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }
+            }
+            // Edit the specified course
+            else if (!empty($_POST['editCourse'])) {
+                $course = array(
+                    "id" => $_POST['id'],                    
+                    "name" => $_POST['name'],
+                    "description" => $_POST['description']
+                );
+                $success = $main->getCourseManager()->editCourse($course);
+                if ($success) {
+                    $output = $main->buildResponse();
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }               
+            }
+            // Delete the specified course
+            else if (!empty($_POST['deleteCourse'])) {
+                $course = array(                    
+                    "id" => $_POST['id']
+                );                
+                $success = $main->getCourseManager()->deleteCourse($course);
+                if ($success) {
+                    $output = $main->buildResponse();
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }
+            }            
             // Default response: simply inform the client that the user is logged in
             else if (!empty($_POST['validate'])) {                
                 $output = $main->buildResponse(array(), "VALIDATED");

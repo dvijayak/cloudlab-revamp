@@ -55,6 +55,35 @@
 			return $success;			
 		}
 		
+		/*
+		 * Delete the specified user
+		 */
+		public function deleteUser ($user) {
+			$idnum = mysql_real_escape_string($user['idnum']);
+			$id = mysql_real_escape_string($user['id']);
+			
+			$queries = array();
+			// Delete all files owned by the user			
+			$query = "DELETE FROM Files WHERE file_owner = '" . $id . "';";
+			array_push($queries, $query);
+			// Withdraw the user from all courses enrolled in
+			$query = "DELETE FROM Enrollments WHERE user_id = '" . $id . "';";
+			array_push($queries, $query);
+			// Delete the user
+			$query = "DELETE FROM Users WHERE user_number = '" . $idnum . "';";
+			array_push($queries, $query);
+			
+			$results = $this->dbm->queryChain($queries);
+			$success = true;
+			foreach ($results as $result) {				
+				$success = $result;
+				if (!$success) {
+					break;
+				}
+			}									
+			return $success;
+		}		
+		
         /**
          * Retrieve the list of users (minus admins) that exist in the system
          */
@@ -90,36 +119,6 @@
             $instructors = $this->dbm->queryFetchAssoc($query);
 			return $instructors;					
 		}
-		
-		/*
-		 * Delete the specified user
-		 */
-		public function deleteUser ($user) {
-			$idnum = mysql_real_escape_string($user['idnum']);
-			$id = mysql_real_escape_string($user['id']);
-			
-			$queries = array();
-			// Delete all files owned by the user			
-			$query = "DELETE FROM Files WHERE file_owner = '" . $id . "';";
-			array_push($queries, $query);
-			// Withdraw the user from all courses enrolled in
-			$query = "DELETE FROM Enrollments WHERE user_id = '" . $id . "';";
-			array_push($queries, $query);
-			// Delete the user
-			$query = "DELETE FROM Users WHERE user_number = '" . $idnum . "';";
-			array_push($queries, $query);
-			
-			$results = $this->dbm->queryChain($queries);
-			$success = true;
-			foreach ($results as $result) {				
-				$success = $result;
-				if (!$success) {
-					break;
-				}
-			}									
-			return $success;
-		}
-		
 	}
 	
 ?>
