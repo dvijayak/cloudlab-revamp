@@ -41,6 +41,11 @@
 					}, data);
 				
 			});
+			
+			$( document ).ready(function () {
+				// Push the page on to the back stack
+				Util.back.add();
+			});
 		</script>		
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
@@ -63,9 +68,6 @@
 	<body>		
 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-inner">
-				<div class="pull-left">
-					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
-				</div>
 				<ul class="nav">					
 					<li>
 						<p class="navbar-text">Choose Course</p>

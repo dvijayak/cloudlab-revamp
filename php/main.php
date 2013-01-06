@@ -394,12 +394,13 @@
                 $nKeys = count($keys);                
                 $compiledData = array();
                 for ($i = 0; $i < $nKeys; $i++) {
-                    $datum = $data[$keys[$i]];                    
-                    if ($datum == NULL) {
+                    $datum = $data[$keys[$i]];
+                    // Ensure to do STRICT equality tests
+                    if ($datum === NULL) {
                         $output['status'] = "FAIL";
                         break;
                     }
-                    else if ($datum === 0) { // Ensure to do a STRICT equality test
+                    else if ($datum === 0) { 
                         $output['status'] = "ZERO_RESULTS";                        
                         break;
                     }

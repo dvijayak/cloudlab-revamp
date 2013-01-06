@@ -48,6 +48,11 @@
 					$( "body" ).css('padding-top', '120px');
 				}				
 			}, data);
+			
+			$( document ).ready(function () {
+				// Push the page on to the back stack
+				Util.back.add();
+			});			
 		</script>		
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">

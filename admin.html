@@ -45,9 +45,6 @@
 	<body>				
 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-inner">
-				<div class="pull-left">
-					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
-				</div>
 				<ul class="nav">					
 					<li>
 						<p class="navbar-text">Control Panel</p>
@@ -84,6 +81,9 @@
 					var populateUsersTable = function (users) {
 						// Reset the table
 						$( "#users-table" ).empty();
+						$( "<tr><th></th><th>&#35;</th><th>Username</th><th>Password (Hashed)</th>" +
+						  "<th>First Name</th><th>Last Name</th><th>E-mail</th>" +
+						  "<th>Role</th><th></th></tr>" ).appendTo($ ( "#users-table" ));
 						var n = users.length;
 						for (var i = 0; i < n; i++) {
 							// Create a row for each user in the table
@@ -131,7 +131,7 @@
 								}																
 							});
 							
-							// Edit user
+							// Edit user							
 						}					
 	
 					};													

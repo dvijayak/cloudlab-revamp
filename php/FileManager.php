@@ -76,7 +76,7 @@
             "' AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
             " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";
             
-            $files = $this->dbm->queryFetchAssoc($query);
+            $files = $this->dbm->queryFetchAssoc($query);            
 			return $files;		       
         }
         

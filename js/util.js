@@ -26,7 +26,35 @@ function Util () {
     this.ajax = new Array();
     this.ajax.url = this.urls.php.main;
     this.ajax.dataType = "json";    
-        
+    
+    // The back function works only if HTML5 local/sessionStorage is supported (see the log message in your respective developer console)
+    if (window.sessionStorage) {
+        /* Stack-based implementation (using array) of the back function */        
+        if (!sessionStorage.stack) {
+            sessionStorage.stack = new Array();            
+        }
+        this.back = new Array();
+        // Push the currently landed page on to the stack
+        this.back.add = function () {
+            var current = window.location.pathname;    
+            sessionStorage.stack.push(current);
+            alert("Pushed " + current);
+        };
+        // Go to the previous page by popping the current page from the stack
+        this.back.go = function () {
+            var current = sessionStorage.stack.pop();
+            alert("Popped " + current);
+            var prev = sessionStorage.stack.pop();
+            alert("Popped " + prev);
+            sessionStorage.stack.push(prev);
+            alert("Pushed " + prev);
+            window.location.href = prev;
+        };            
+    }
+    else {
+        console.log("Warning: Back function is not available: HTML5 Local Web Storage is not supported on your device.");
+    }
+    
     /* Methods */
     
     this.cookiesToArray = function () {
@@ -39,7 +67,7 @@ function Util () {
             array[cookie[0]] = cookie[1];
         }							
         return array;
-    }
+    };
     
     // Validates the session and then optionally performs a given AJAX task (with optional input data) to the same server
     this.validateSession = function (task, taskData) {        
@@ -52,7 +80,8 @@ function Util () {
                         
                         // Bind onclick events to the Back and Logout buttons
                         $( "#header #back" ).click(function () {
-                            window.location.href=document.referrer;
+                            //window.location.href=document.referrer;                            
+                            Util.back.go();
                         });
                         
                         $( "#header #logout" ).click(function () {
@@ -75,7 +104,7 @@ function Util () {
                     }
                 },
                Util.ajax.dataType);
-    }
+    };
     
     // Log out of the current session    
     this.logout = function () {
@@ -89,9 +118,9 @@ function Util () {
                 }
             };  
         $.post(Util.ajax.url, data, success, Util.ajax.dataType);
-    }        
+    };        
     
-}
+};
 
 Util = new Util();
 

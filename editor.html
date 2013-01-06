@@ -53,6 +53,9 @@
 							empty();
 						}					
 					}
+					else if (output.status == "FAIL") {
+						changeStatus(StatusBarLevel.ERROR, "Unable to display files for unknown reasons!");
+					}
 					if (always !== undefined) {
 						// Carry out the following procedure always
 						always();
@@ -81,13 +84,15 @@
 				}, function () {
 					$( "#browser" ).text("There are no files for this project.");
 				}, function () {
-					// Show toolbar if Student
-					var cookies = Util.cookiesToArray();
-					if (cookies['role'] == "1") {	
+					// Show toolbar and enable editing if Student
+					var cookies = Util.cookiesToArray();				
+					if (cookies['role'] == "1") {
+						alert("ASD");
 						$( "#toolbar" ).slideDown('fast');					
 						$( "body" ).css('padding-top', '180px');
-						$( "#statusbar" ).css('margin-top', '120px');
-					}		
+						$( "#statusbar" ).css('margin-top', '120px');						
+						EM.editor.setReadOnly(false);						
+					}					
 				})
 			//Util.validateSession(function (output) {
 				//if (output.status == "OK") {					
@@ -165,6 +170,10 @@
 				}				
 			}
 			
+			$( document ).ready(function () {
+				// Push the page on to the back stack
+				Util.back.add();
+			});			
 		</script>		
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">

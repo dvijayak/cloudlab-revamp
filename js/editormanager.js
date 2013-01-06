@@ -7,6 +7,7 @@ function EditorManager () {
     this.eRenderer = this.editor.renderer;
     this.editor.setTheme("ace/theme/twilight");
     this.eSession.setMode("ace/mode/c_cpp");
+    this.editor.setReadOnly(true);
     this.editor.setHighlightActiveLine(false);
     this.eSession.setUseWrapMode(true);
     this.editor.setValue("Welcome to your project! Select a file to edit.");
