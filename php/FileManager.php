@@ -27,7 +27,7 @@
             //$contents = mysql_real_escape_string(($file['contents']) ? $file['contents'] : "");
             $contents = "// New file: " . $filename.".".$ext . "\n\n";
             if ($ext == "c") {
-                $contents .= $this->defaults->files->c;    
+                $contents = "/* New file " . $filename.".".$ext . "*/\n\n" . $this->defaults->files->c;    
             }
             else if ($ext == "cpp") {
                 $contents .= $this->defaults->files->cpp;
