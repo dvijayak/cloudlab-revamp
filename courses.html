@@ -24,12 +24,23 @@
 								 */
 								// Clicking on a course takes the user to the projects browser for that course
 								$( "<li><a href='#'>" + courses[i].course.toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
-									var data = "course=" + event.data.course.course;								
-									$.post(Util.ajax.url, data, function (output) {									
-										if (output.status == "OK") {										
-											window.location.href="projects.html";
-										}
-									}, Util.ajax.dataType);								
+									if (!$( this ).attr('class') ||
+										$( this ).attr('class').search("active") === -1) {
+										// Clear all other active states
+										for (var j = 0; j < nCourses; j++) {
+											$( "#browser ul li:contains('" + courses[j].course.toUpperCase() + "')" ).removeClass("active");	
+										}								
+										// Set this as active
+										$( this ).addClass("active");	
+									}
+									else {
+										var data = "course=" + event.data.course.course;								
+										$.post(Util.ajax.url, data, function (output) {									
+											if (output.status == "OK") {										
+												window.location.href="projects.html";
+											}
+										}, Util.ajax.dataType);
+									}
 								}).appendTo( "#browser ul" );
 							}
 						}

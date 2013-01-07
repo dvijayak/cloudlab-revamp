@@ -171,6 +171,8 @@
 			$( document ).ready(function () {
 				// Push the page on to the back stack
 				Util.back.add();
+				// Initialize all tooltips
+				$('[rel=tooltip]').tooltip();
 			});			
 		</script>		
         <!-- Bootstrap -->
@@ -569,12 +571,7 @@
 						<div class="controls">
 							<input id="tabwidth" type="number" min="1" max="8" placeholder="4">
 						</div>
-					</div>
-					<script>
-						$(function () {
-							$('[rel=tooltip]').tooltip();
-						});						
-					</script>
+					</div>					
 					<!-- Soft tabs -->
 					<div class="control-group">
 						<label class="control-label" for="softtabs" rel="tooltip" data-placement="right" title="Enable soft tabs">Soft tabs</label>						

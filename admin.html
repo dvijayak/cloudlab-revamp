@@ -61,7 +61,6 @@
 				</div>
 			</div>			
 		</div>
-
 		<div class="container-fluid">
 			<div class="row-fluid">						
 				<h3>
@@ -111,8 +110,8 @@
 							var row = "<tr>";
 							
 							// Controls cell (contains buttons for manipulating the row)
-							var edit = "<button id='users-edit-" + users[i]['idnum'] + "' class='btn'><i class='icon-pencil'></i></button>",
-								del = "<button id='users-del-" + users[i]['idnum'] + "' class='btn btn-danger'><i class='icon-remove icon-white'></i></button>",
+							var edit = "<button id='users-edit-" + users[i]['idnum'] + "' class='btn' rel='tooltip' data-placement='top' title='Edit " + users[i]['idnum'] + "'><i class='icon-pencil'></i></button>",
+								del = "<button id='users-del-" + users[i]['idnum'] + "' class='btn btn-danger' rel='tooltip' data-placement='top' title='Delete " + users[i]['idnum'] + "'><i class='icon-remove icon-white'></i></button>",
 								controls = "<td><div class='btn-group'>" + del + edit + "</div></td>";
 								
 							// Data cells
@@ -227,11 +226,16 @@
 						var n = courses.length;
 						for (var i = 0; i < n; i++) {
 							// Create a row for each user in the table
-							var row = "<tr>";
+							var row = "<tr>";														
+																	
+							// Initialize all tooltips
+							$( function () {
+								$( "[rel=tooltip]" ).tooltip();
+							});
 							
 							// Controls cell (contains buttons for manipulating the row)
-							var edit = "<button id='courses-edit-" + courses[i]['id'] + "' class='btn'><i class='icon-pencil'></i></button>",
-								del = "<button id='courses-del-" + courses[i]['id'] + "' class='btn btn-danger'><i class='icon-remove icon-white'></i></button>",
+							var edit = "<button id='courses-edit-" + courses[i]['id'] + "' class='btn' rel='tooltip' data-placement='top' title='Edit " + courses[i]['id'] + "'><i class='icon-pencil'></i></button>",
+								del = "<button id='courses-del-" + courses[i]['id'] + "' class='btn btn-danger' rel='tooltip' data-placement='top' title='Edit " + courses[i]['id'] + "'><i class='icon-remove icon-white'></i></button>",
 								controls = "<td><div class='btn-group'>" + del + edit + "</div></td>";
 								
 							// Data cells
@@ -547,9 +551,6 @@
 				<button id="update" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Update</button>
 				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
 			</div>	
-		</div>
-		
-		
-
+		</div>		
 	</body>	
 </html>
