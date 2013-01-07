@@ -17,7 +17,8 @@
 		</script>		
 		<!---------------->
 		<script>
-			var clickedFile; // Document scope: Keep track of the file that was clicked
+			var selectedFile, // Document scope: Keep track of the file that was selected
+				openedFile; // Document scope: Keep track of the file that was opened
 			var cookies = Util.cookiesToArray();
 			// Ensure that the user properly lands on the page
 			if (!cookies['course']) {
@@ -73,6 +74,12 @@
 						 */
 						// Clicking on a file opens it
 						$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+							// Remember the selected file
+							selectedFile = {
+								"name" : event.data.file['name'],
+								"ext" : event.data.file['ext']
+							};
+							// Set as active
 							if (!$( this ).attr('class') ||
 								$( this ).attr('class').search("active") === -1) {
 								// Clear all other active states
@@ -81,8 +88,10 @@
 								}								
 								// Set this as active
 								$( this ).addClass("active");	
-							}							
-							openFile(event.data.file);
+							}
+							else {
+								openFile(event.data.file);
+							}
 						}).appendTo( "#browser ul" );
 						
 						// Open the first file by default (can be changed to open last saved file via cookies, etc.)
@@ -145,8 +154,8 @@
 				var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&openFile=true";
 				$.post(Util.ajax.url, data, function (output) {
 					if (output.status == "OK") {
-						// Remember the currently opened file
-						clickedFile = {
+						// Remember the currently open file
+						openedFile = {
 							"name" : file['name'],
 							"ext" : file['ext']
 						};
@@ -270,10 +279,10 @@
 			<script>
 				// Save the contents of the current file in the editor
 				function saveFile () {
-					var file = clickedFile['name'] + "." + clickedFile['ext'];
+					var file = openedFile['name'] + "." + openedFile['ext'];
 					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Saving " +  file + "...");
 					var contents = EM.editor.getValue();
-					var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +
+					var data = "name=" + openedFile['name'] + "&ext=" + openedFile['ext'] +
 						"&contents=" + contents + "&saveFile=true";
 					$.post(Util.ajax.url, data, function (output) {						
 						if (output.status == "OK") {
@@ -295,14 +304,19 @@
 						$( ".modal" ).not( "#preferencesDialog" ).on('show', function () {							
 							// get current list of files							
 							getFiles(function (files) {
-								// Reset the file select element
-								$( ".modal #filename" ).empty();
+								var fileselect = $( ".modal #filename" )
+								// Reset the file select element								
+								fileselect.empty();
 								// Populate the file select element
 								var nFiles = files.length;
 								for (var i = 0; i < nFiles; i++) {
 									var oldfile = files[i]['name'] + "." + files[i]['ext'];
-									$( "<option value='" + oldfile + "'>" + oldfile + "</option>" ).appendTo( ".modal #filename" );	
-								}								
+									$( "<option value='" + oldfile + "'>" + oldfile + "</option>" ).appendTo( fileselect );	
+								}
+								// Set the default option to be the selected file
+								fileselect.find( "option[value='" + selectedFile['name'] +
+												"." + selectedFile['ext'] + "']" ).attr('selected', 'selected');
+								
 							}, function () {
 								// Reset the file select element
 								$( ".modal #filename" ).empty();
@@ -339,7 +353,7 @@
 								deleteFile(file);
 							}
 						});						
-					})
+					})										
 					
 					// Reload the file browser with the latest list of files
 					var refreshFileBrowser = function () {
@@ -643,20 +657,20 @@
 				var socket = io.connect(url);
 				
 				$( "#compile" ).click(function () {
-					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Compiling " +  openedFile['name'] + "." + openedFile['ext'] + "...");					
 					var data = buildMessage(["contents"],
 											[EM.editor.getValue()]);
 					socket.emit('compile', data);
 				});
 				
 				$( "#run" ).click(function () {
-					Util.changeStatus(Util.StatusBarLevel.INTERIM, "Executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					Util.changeStatus(Util.StatusBarLevel.INTERIM, "Executing " +  openedFile['name'] + "." + openedFile['ext'] + "...");					
 					var data = buildMessage();
 					socket.emit('run', data);
 				});
 				
 				$( "#compilerun" ).click(function () {
-					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Compiling and executing" +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Compiling and executing" +  openedFile['name'] + "." + openedFile['ext'] + "...");
 					$( "#statusbar" ).text();
 					var data = buildMessage(["contents"],
 											[EM.editor.getValue()]);
@@ -668,8 +682,8 @@
 					var cookies = Util.cookiesToArray();
 					var data = {
 						"user" : cookies['username'],
-						"name" : clickedFile['name'],
-						"ext" : clickedFile['ext']														
+						"name" : openedFile['name'],
+						"ext" : openedFile['ext']														
 					};
 					if (keys !== undefined && values !== undefined && keys.length == values.length) {
 						var n = keys.length;							
@@ -683,13 +697,13 @@
 				socket.on('output', function(data) {
 					// If the response is valid JSON, it is runtime output
 					try {
-						Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
+						Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Finished executing " +  openedFile['name'] + "." + openedFile['ext'] + ".");
 						var jsonData = JSON.parse(data);						
 						EM.appendValue(jsonData.stderr + "===========\n" + jsonData.stdout, EM.terminal);
 					}
 					// else, it is compiler output
 					catch (e) {
-						Util.changeStatus(Util.StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
+						Util.changeStatus(Util.StatusBarLevel.INTERIM, "Finished compiling " +  openedFile['name'] + "." + openedFile['ext'] + ".");
 						EM.appendValue(data, EM.terminal);
 					}
 					

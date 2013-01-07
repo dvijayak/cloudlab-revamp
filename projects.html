@@ -7,7 +7,8 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>
-		<script>			
+		<script>
+			var selectedProject; // Document scope: Keep track of the file that was selected
 			var cookies = Util.cookiesToArray();
 			// Ensure that the user properly lands on the page
 			if (!cookies['course']) {
@@ -56,7 +57,11 @@
 						 * Otherwise, projects[i] would take the value of undefined
 						 */
 						// Clicking on a project opens it
-						$( "<li><a href='#'>" + projects[i].project + "</a></li>").click({project: projects[i]}, function (event) {							
+						$( "<li><a href='#'>" + projects[i].project + "</a></li>").click({project: projects[i]}, function (event) {
+							// Remember the selected project
+							selectedProject = {
+								"name" : event.data.project.project,								
+							};
 							if (!$( this ).attr('class') ||
 								$( this ).attr('class').search("active") === -1) {
 								// Clear all other active states
@@ -372,14 +377,17 @@
 					$( ".modal" ).on('show', function () {							
 						// get current list of projects							
 						getProjects(function (projects) {
+							var projectselect = $( ".modal #name" );
 							// Reset the project select element
-							$( ".modal #name" ).empty();
+							projectselect.empty();
 							// Populate the project select element
 							var nProjects = projects.length;
 							for (var i = 0; i < nProjects; i++) {
 								var oldproject = projects[i].project;
-								$( "<option value='" + oldproject + "'>" + oldproject + "</option>" ).appendTo( ".modal #name" );	
-							}								
+								$( "<option value='" + oldproject + "'>" + oldproject + "</option>" ).appendTo( projectselect );	
+							}
+							// Set the default option to be the selected project
+							projectselect.find( "option[value='" + selectedProject['name'] + "']" ).attr('selected', 'selected');
 						}, function () {
 							// Reset the project select element
 							$( ".modal #name" ).empty();
