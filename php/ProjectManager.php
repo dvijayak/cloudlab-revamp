@@ -1,5 +1,15 @@
 <?php    
     
+    /* error reporting must be set at -1 during testing */
+    
+    error_reporting(E_ALL ^ E_NOTICE);
+    //error_reporting(-1);        
+    
+    // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
+    //require_once("PhpConsole.php");
+    //PHPConsole::start();
+    /////////////////////////////////////////////////////////////////////////    
+    
     class ProjectManager
     {
         //private $s3;

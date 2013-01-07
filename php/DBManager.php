@@ -1,5 +1,15 @@
 <?php
 
+    /* error reporting must be set at -1 during testing */
+    
+    error_reporting(E_ALL ^ E_NOTICE);
+    //error_reporting(-1);        
+    
+    // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
+    //require_once("PhpConsole.php");
+    //PHPConsole::start();
+    /////////////////////////////////////////////////////////////////////////
+
     /**
      * TODO: Currently using only the MySQL extensions, which is discouraged (and possibly deprecated from PHP 5.1.x)
      *       In the future, to improve security (such as protecting from SQL injection) and increase productivity,
