@@ -25,18 +25,30 @@
 						 * Otherwise, projects[i] would take the value of undefined
 						 */
 						// Clicking on a project takes the user to the editor for the project
-						$( "<li><a href='#'>" + projects[i].project.toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
-							var data = "project=" + event.data.project.project;								
-							$.post(Util.ajax.url, data, function (output) {									
-								if (output.status == "OK") {										
-									window.location.href="editor.html";
-								}
-							}, Util.ajax.dataType);							
+						$( "<li><a href='#'>" + projects[i].project.toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {							
+							if (!$( this ).attr('class') ||
+								$( this ).attr('class').search("active") === -1) {
+								// Clear all other active states
+								for (var j = 0; j < nProjects; j++) {
+									$( "#browser ul li:contains('" + projects[j].project.toUpperCase() + "')" ).removeClass("active");	
+								}								
+								// Set this as active
+								$( this ).addClass("active");	
+							}
+							else {
+								var data = "project=" + event.data.project.project;								
+								$.post(Util.ajax.url, data, function (output) {									
+									if (output.status == "OK") {										
+										window.location.href="editor.html";
+									}
+								}, Util.ajax.dataType);			
+							}											
 						}).appendTo( "#browser ul" );
 					}
 				}
 				else if (output.status == "ZERO_RESULTS") {
 					$( "#browser" ).text("There are no projects for this course.");
+					var cookies = Util.cookiesToArray();
 					if (cookies['role'] == "2") {
 						$( "#toolbar" ).slideDown('fast');
 					}
@@ -100,8 +112,8 @@
 		<div id="toolbar" class="navbar navbar-fixed-top">
 			<div class="navbar-inner">
 				<ul class="nav">
-					<li><a id="new" href="#">New</a></li>
-					<li><a id="save" href="#">Edit</a></li>
+					<li><a id="new" data-toggle="modal" href="#newProjectDialog">New</a></li>
+					<li><a id="rename" href="#">Rename</a></li>
 					<li><a id="delete" href="#">Delete</a></li>
 					<li><a id="upload" href="#">Upload</a></li>
 					<li><a id="submit" href="#">Submit</a></li>
@@ -122,5 +134,94 @@
 				</div>
 			</div>			
 		</div>
+		
+		<!-- Modal Dialogs & Forms -->
+		
+		<!-- Create new project -->
+		<div id="newProjectDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Create a new project</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="courseid">Select course</label>
+						<div class="controls">
+							<select id="courseid">
+							</select>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="name">Name</label>
+						<div class="controls">
+							<input type="text" id="name" placeholder="Project name">
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="description">Description</label>
+						<div class="controls">
+							<textarea id="description" rows="5" maxlength="1000" placeholder="Enter a brief description for the project (max 1000 characters)"></textarea>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Create</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>			
+		</div>
+		
+		<!-- Rename file -->
+		<div id="renameFileDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Rename a file</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="filename">Select file</label>
+						<div class="controls">
+							<select id="filename">
+							</select>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="newfile">New name</label>
+						<div class="controls">
+							<input type="text" id="newfile" placeholder="File name">
+						</div>
+					</div>					
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="rename" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Rename</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>
+		</div>
+		
+		<!-- Delete file -->
+		<div id="deleteFileDialog" class="modal hide fade in" aria-hidden="true">
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Delete a file</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="filename">Select file</label>
+						<div class="controls">
+							<select id="filename">
+							</select>
+						</div>
+					</div>			
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button id="delete" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Delete</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>
+		</div>		
 	</body>
 </html>

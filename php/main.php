@@ -94,11 +94,7 @@
                 );
                 $success = $main->getFileManager()->renameFile($user, $course, $project, $old, $new);
                 if ($success) {                    
-                    // Return the updated list of files
-                    $files = $main->getFileManager()->getFiles($user, $course, $project);
-                    $output = $main->buildResponse(array(
-                       "files" => $files 
-                    ));                    
+                    $output = $main->buildResponse();                
                 }
                 else {
                     $output = $main->buildResponse(array(), "FAIL");
@@ -116,11 +112,7 @@
                 );  
                 $success = $main->getFileManager()->createFile($user, $course, $project, $file);                
                 if ($success) {                    
-                    // Return the updated list of files
-                    $files = $main->getFileManager()->getFiles($user, $course, $project);
-                    $output = $main->buildResponse(array(
-                       "files" => $files 
-                    )); 
+                    $output = $main->buildResponse();
                 }
                 else {
                     $output = $main->buildResponse(array(), "FAIL");
@@ -137,11 +129,7 @@
                 );  
                 $success = $main->getFileManager()->deleteFile($user, $course, $project, $file);                
                 if ($success) {                    
-                    // Return the updated list of files
-                    $files = $main->getFileManager()->getFiles($user, $course, $project);
-                    $output = $main->buildResponse(array(
-                       "files" => $files 
-                    )); 
+                    $output = $main->buildResponse();
                 }
                 else {
                     $output = $main->buildResponse(array(), "FAIL");

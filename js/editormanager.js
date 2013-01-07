@@ -25,7 +25,14 @@ function EditorManager () {
     this.tRenderer.setShowPrintMargin(false);    
     
     
-    /* Custom key bindings */    
+    /* Custom key bindings */
+    this.editor.commands.addCommand({
+        name: 'newFile',
+        bindKey: {win: 'Ctrl-Alt-N', mac: 'Command-Option-N'},
+        exec: function(editor) {            
+            $( "#newFileDialog").modal({keyboard:true});
+        }
+    });
     this.editor.commands.addCommand({
         name: 'saveFile',
         bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
@@ -33,8 +40,6 @@ function EditorManager () {
             saveFile();
         }
     });
-
-    
     
     /* Custom Editor Functions */
     

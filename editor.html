@@ -73,6 +73,15 @@
 						 */
 						// Clicking on a file opens it
 						$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
+							if (!$( this ).attr('class') ||
+								$( this ).attr('class').search("active") === -1) {
+								// Clear all other active states
+								for (var j = 0; j < nFiles; j++) {
+									$( "#browser ul li:contains('" + files[j]['name'] + "." + files[j]['ext'] + "')" ).removeClass("active");	
+								}								
+								// Set this as active
+								$( this ).addClass("active");	
+							}							
 							openFile(event.data.file);
 						}).appendTo( "#browser ul" );
 						
@@ -82,16 +91,24 @@
 						}
 					}
 				}, function () {
-					$( "#browser" ).text("There are no files for this project.");
-				}, function () {
-					// Show toolbar and enable editing if Student
+					$( "#browser ul" ).text("There are no files for this project.");
+				}, function () {					
+					$( "#toolbar" ).slideDown('fast');
+					$( "body" ).css('padding-top', '180px');
+					$( "#statusbar" ).css('margin-top', '120px');					
+					EM.editor.setReadOnly(false);
+					// Show limited toolbar items if Student
 					var cookies = Util.cookiesToArray();				
-					if (cookies['role'] == "1") {						
-						$( "#toolbar" ).slideDown('fast');					
-						$( "body" ).css('padding-top', '180px');
-						$( "#statusbar" ).css('margin-top', '120px');						
-						EM.editor.setReadOnly(false);						
-					}					
+					if (cookies['role'] == "1" ) {
+						$( "#new" ).hide();
+						$( "#save" ).hide();
+						$( "#rename" ).hide();
+						$( "#delete" ).hide();
+						$( "#submit" ).hide();
+						// Disable certain keyboard shortcuts
+						EM.editor.commands.removeCommand('newFile');
+						EM.editor.commands.removeCommand('saveFile');
+					}
 				})
 			//Util.validateSession(function (output) {
 				//if (output.status == "OK") {					
@@ -115,7 +132,7 @@
 				//	}
 				//}
 				//else if (output.status == "ZERO_RESULTS") {
-				//	$( "#browser" ).text("There are no files for this project.");			
+				//	$( "#browser ul" ).text("There are no files for this project.");			
 				//}
 							
 			/*}*/, data);
@@ -358,7 +375,7 @@
 					// Reload the file browser with the latest list of files
 					var refreshFileBrowser = function () {
 						// Reset the browser
-						$( "#browser ul" ).empty();
+						$( "#browser ul" ).empty();			
 						// Get current list of files							
 						getFiles(function (files) {
 							// Generate list of files for the chosen project
@@ -371,7 +388,7 @@
 								// Clicking on a file opens it
 								$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
 									openFile(event.data.file);
-								}).appendTo( "#browser ul" );
+								}).appendTo( "#browser ul" );								
 								
 								// Open the first file by default (can be changed to open last saved file via cookies, etc.)
 								if (i == 0) {
@@ -379,8 +396,8 @@
 								}
 							}								
 						}, function () {
-							$( "#browser" ).text("There are no files for this project.");
-						});
+							$( "#browser ul" ).text("There are no files for this project.");
+						});						
 					}
 					
 					// Create the specified file
@@ -390,8 +407,8 @@
 						var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&newFile=true";
 						
 						$.post(Util.ajax.url, data, function (output) {
-							if (output.status == "OK") {																								
-								refreshFileBrowser();								
+							refreshFileBrowser();
+							if (output.status == "OK") {																
 								changeStatus(StatusBarLevel.SUCCESS, "Created " + filename + " successfully.");
 							}
 							else {
@@ -409,8 +426,8 @@
 									 " to " + newfile['name'] + "." + newfile['ext'] + "...");
 						
 						$.post(Util.ajax.url, data, function (output) {
-							if (output.status == "OK") {																								
-								refreshFileBrowser();								
+							refreshFileBrowser();
+							if (output.status == "OK") {																																							
 								changeStatus(StatusBarLevel.SUCCESS, oldfile['name'] + "." + oldfile['ext'] +
 									 " was renamed to " + newfile['name'] + "." + newfile['ext'] + " successfully.");
 							}
@@ -427,8 +444,8 @@
 						var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&deleteFile=true";
 						
 						$.post(Util.ajax.url, data, function (output) {
-							if (output.status == "OK") {																								
-								refreshFileBrowser();								
+							refreshFileBrowser();
+							if (output.status == "OK") {																																							
 								changeStatus(StatusBarLevel.SUCCESS, "Deleted " + filename + " successfully.");
 							}
 							else {
