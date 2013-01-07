@@ -16,6 +16,10 @@
             $this->defaults->files->cpp = "#include <iostream>\n\nint main(void) {\n\tstd::cout << \"Hello world\" << std::endl;\n\treturn 0;\n}\n";
         }                
         
+        /**
+         * Open the specified file by returning its contents
+         * (playground: the file must be owned by the instructor)
+         */
         public function openFile ($username, $course, $project, $file) {
             $username = mysql_real_escape_string($username);
             $course = mysql_real_escape_string($course);
@@ -24,10 +28,12 @@
             $ext = mysql_real_escape_string($file['ext']);
             // Retrieve the project id for the given pair of course id and project name
             $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Retrieve the instructor for the given course (playground)
+            $subquery2 = "SELECT Enrollments.user_id FROM Users, Enrollments WHERE Users.user_id = Enrollments.user_id AND Enrollments.course_id = '" . $course . "' AND Users.group_id = 2";
             // Retrieve the contents of the specified file
             $query = "SELECT file_data FROM Files" .
             " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
-            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
+            "' AND file_ext='" . $ext . "' AND file_owner IN (" . $subquery2 . ");";
                         
             
             $result = $this->dbm->query($query);
@@ -124,7 +130,8 @@
         }        
         
         /**
-         * Retrieve the list of files for the chosen project
+         * Retrieve the list of files for the chosen project (playground: retrieve files
+         * owned/created by the instructor of the course)
          */
         public function getFiles ($username, $course, $project) {
             $username = mysql_real_escape_string($username);
@@ -132,12 +139,14 @@
             $project = mysql_real_escape_string($project);
             // Retrieve the project id for the given pair of course id and project name
             $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Retrieve the instructor for the given course (playground)
+            $subquery2 = "SELECT Enrollments.user_id FROM Users, Enrollments WHERE Users.user_id = Enrollments.user_id AND Enrollments.course_id = '" . $course . "' AND Users.group_id = 2";
             // Retrieve the list of files for the given project id which is owned by the given user
             $query = "SELECT Enrollments.course_id AS 'course', Projects.project_name AS 'project'," .
             " Files.file_id AS 'id', Files.file_name AS 'name', Files.file_ext AS 'ext', Files.project_id, Files.file_owner AS 'owner', Files.file_data AS 'contents'" .
-            " FROM Enrollments, Projects, Files WHERE Files.file_owner = '" . $username . // Note that each new line continuation begins with a space
-            "' AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
-            " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";
+            " FROM Enrollments, Projects, Files WHERE Files.file_owner IN (" . $subquery2 . ")" . // Note that each new line continuation begins with a space
+            " AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
+            " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";                        
             
             $files = $this->dbm->queryFetchAssoc($query);            
 			return $files;		       
