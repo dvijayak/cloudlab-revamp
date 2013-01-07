@@ -7,47 +7,147 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>
-		<script>			
+		<script>
+			var selectedProject; // Document scope: Keep track of the file that was selected
 			var cookies = Util.cookiesToArray();
 			// Ensure that the user properly lands on the page
 			if (!cookies['course']) {
 				window.location.href = "courses.html";
 			}
 			var data = "course=" + cookies['course'] + "&getProjects=true";
-			Util.validateSession(function (output) {
-				if (output.status == "OK") {					
-					// Generate list of projects for the chosen course					
-					var projects = output.data.projects;
-					var nProjects = projects.length;
+			
+			// Retrieve the current list of projects for this project
+			var getProjects = function (task, empty, always) {
+				var cookies = Util.cookiesToArray();
+				// Ensure that the user properly lands on the page
+				if (!cookies['course']) {
+					window.location.href = "courses.html";
+				}		
+				var data = "course=" + cookies['course'] + "&getProjects=true";
+				$.post(Util.ajax.url, data, function (output) {
+					if (output.status == "OK") {
+						var projects = output.data.projects;
+						// Do something with the list of projects
+						if (task !== undefined) {
+							task(projects);
+						}
+					}
+					else if (output.status == "ZERO_RESULTS") {
+						// Do something if there are no projects
+						if (empty !== undefined) {
+							empty();
+						}					
+					}
+					else if (output.status == "FAIL") {
+						Util.changeStatus(Util.StatusBarLevel.ERROR, "Unable to display projects for unknown reasons!");
+					}
+					if (always !== undefined) {
+						// Carry out the following procedure always
+						always();
+					}
+				}, Util.ajax.dataType);												
+			}			
+			
+			Util.validateSession(getProjects(function (projects) {
+					// Generate list of projects for the chosen project
+					var nProjects = projects.length;				
 					for (var i = 0; i < nProjects; i++) {
 						// Create the UI elements
 						/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
 						 * Otherwise, projects[i] would take the value of undefined
 						 */
-						// Clicking on a project takes the user to the editor for the project
-						$( "<li><a href='#'>" + projects[i].toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {						
-							var data = "project=" + event.data.project;								
-							$.post(Util.ajax.url, data, function (output) {									
-								if (output.status == "OK") {										
-									window.location.href="editor.html";
-								}
-							}, Util.ajax.dataType);							
+						// Clicking on a project opens it
+						$( "<li><a href='#'>" + projects[i].project + "</a></li>").click({project: projects[i]}, function (event) {
+							// Remember the selected project
+							selectedProject = {
+								"name" : event.data.project.project,								
+							};
+							if (!$( this ).attr('class') ||
+								$( this ).attr('class').search("active") === -1) {
+								// Clear all other active states
+								for (var j = 0; j < nProjects; j++) {
+									$( "#browser ul li:contains('" + projects[j].project + "')" ).removeClass("active");	
+								}								
+								// Set this as active
+								$( this ).addClass("active");	
+							}
+							else {
+								var data = "project=" + event.data.project.project;								
+								$.post(Util.ajax.url, data, function (output) {									
+									if (output.status == "OK") {										
+										window.location.href="editor.html";
+									}
+								}, Util.ajax.dataType);			
+							}											
 						}).appendTo( "#browser ul" );
 					}
-				}
-				else if (output.status == "ZERO_RESULTS") {
-					$( "#browser" ).text("There are no projects for this course.");
+				}, function () {
+					$( "#browser ul" ).text("There are no projects for this course.");
+					var cookies = Util.cookiesToArray();
 					if (cookies['role'] == "2") {
 						$( "#toolbar" ).slideDown('fast');
 					}
-				}
-				// Show toolbar if Instructor
-				var cookies = Util.cookiesToArray();
-				if (cookies['role'] == "2") {				
-					$( "#toolbar" ).slideDown('fast');
-					$( "body" ).css('padding-top', '120px');
-				}				
-			}, data);
+				}, function () {					
+					// Show toolbar if Instructor
+					var cookies = Util.cookiesToArray();
+					if (cookies['role'] == "2") {				
+						$( "#toolbar" ).slideDown('fast');											
+						$( "body" ).css('padding-top', '180px');
+						$( "#statusbar" ).css('margin-top', '120px');						
+					}
+				}), data);			
+			
+			//Util.validateSession(function (output) {
+			//	if (output.status == "OK") {					
+			//		// Generate list of projects for the chosen course					
+			//		var projects = output.data.projects;
+			//		var nProjects = projects.length;
+			//		for (var i = 0; i < nProjects; i++) {
+			//			// Create the UI elements
+			//			/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
+			//			 * Otherwise, projects[i] would take the value of undefined
+			//			 */
+			//			// Clicking on a project takes the user to the editor for the project
+			//			$( "<li><a href='#'>" + projects[i].project.toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {							
+			//				if (!$( this ).attr('class') ||
+			//					$( this ).attr('class').search("active") === -1) {
+			//					// Clear all other active states
+			//					for (var j = 0; j < nProjects; j++) {
+			//						$( "#browser ul li:contains('" + projects[j].project.toUpperCase() + "')" ).removeClass("active");	
+			//					}								
+			//					// Set this as active
+			//					$( this ).addClass("active");	
+			//				}
+			//				else {
+			//					var data = "project=" + event.data.project.project;								
+			//					$.post(Util.ajax.url, data, function (output) {									
+			//						if (output.status == "OK") {										
+			//							window.location.href="editor.html";
+			//						}
+			//					}, Util.ajax.dataType);			
+			//				}											
+			//			}).appendTo( "#browser ul" );
+			//		}
+			//	}
+			//	else if (output.status == "ZERO_RESULTS") {
+			//		$( "#browser ul" ).text("There are no projects for this course.");
+			//		var cookies = Util.cookiesToArray();
+			//		if (cookies['role'] == "2") {
+			//			$( "#toolbar" ).slideDown('fast');
+			//		}
+			//	}
+			//	// Show toolbar if Instructor
+			//	var cookies = Util.cookiesToArray();
+			//	if (cookies['role'] == "2") {				
+			//		$( "#toolbar" ).slideDown('fast');
+			//		$( "body" ).css('padding-top', '120px');
+			//	}				
+			//}, data);
+			
+			$( document ).ready(function () {
+				// Push the page on to the back stack
+				Util.back.add();
+			});			
 		</script>		
         <!-- Bootstrap -->
         <link href="css/bootstrap.css" rel="stylesheet">
@@ -56,7 +156,7 @@
         <!--------------->
 		<link href="css/general.css" rel="stylesheet">
         <style>
-			body { padding-top: 60px; } /* Accounts for top fixed header */
+			body { padding-top: 120px; } /* Accounts for top fixed header */
 			
 			#toolbar {
 				margin-top: 60px;
@@ -92,12 +192,22 @@
 			</div>
 		</div>
 		
+		<!-- Status Bar -->
+		<div id="statusbar" class="navbar navbar navbar-fixed-top">
+			<div class="navbar-inner">				
+				<span id="status" class="alert">Ready.</span>
+				<div class="pull-right">
+				</div>
+			</div>
+		</div>			
+		
+		<!-- Tool Bar, only visible to instructors -->
 		<div id="toolbar" class="navbar navbar-fixed-top">
 			<div class="navbar-inner">
 				<ul class="nav">
-					<li><a id="new" href="#">New</a></li>
-					<li><a id="save" href="#">Edit</a></li>
-					<li><a id="delete" href="#">Delete</a></li>
+					<li><a id="new" data-toggle="modal" href="#newProjectDialog">New</a></li>
+					<li><a id="rename" data-toggle="modal" href="#renameProjectDialog">Rename</a></li>
+					<li><a id="delete" data-toggle="modal" href="#deleteProjectDialog">Delete</a></li>
 					<li><a id="upload" href="#">Upload</a></li>
 					<li><a id="submit" href="#">Submit</a></li>
 					<li><a id="distribute" href="#">Distribute</a></li>
@@ -109,6 +219,60 @@
 		<div class="container-fluid">
 			
 			<div class="row-fluid">
+				<script>	
+						
+					// Reload the project browser with the latest list of projects
+					var refreshProjectBrowser = function () {
+						// Reset the browser
+						$( "#browser ul" ).empty();			
+						// Get current list of projects							
+						getProjects(function (projects) {
+							// Generate list of projects for the chosen project
+							var nProjects = projects.length;							
+							for (var i = 0; i < nProjects; i++) {
+								// Create the UI elements
+								/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
+								 * Otherwise, projects[i] would take the value of undefined
+								 */
+								console.log(projects[i].project);
+								// Clicking on a project opens it
+								$( "<li><a href='#'>" + projects[i].project + "</a></li>").click({project: projects[i]}, function (event) {							
+									if (!$( this ).attr('class') ||
+										$( this ).attr('class').search("active") === -1) {
+										// Clear all other active states
+										for (var j = 0; j < nProjects; j++) {
+											$( "#browser ul li:contains('" + projects[j].project + "')" ).removeClass("active");	
+										}								
+										// Set this as active
+										$( this ).addClass("active");	
+									}
+									else {
+										var data = "project=" + event.data.project.project;								
+										$.post(Util.ajax.url, data, function (output) {									
+											if (output.status == "OK") {										
+												window.location.href="editor.html";
+											}
+										}, Util.ajax.dataType);			
+									}											
+								}).appendTo( "#browser ul" );
+							}
+						}, function () {
+							$( "#browser ul" ).text("There are no projects for this course.");
+							var cookies = Util.cookiesToArray();
+							if (cookies['role'] == "2") {
+								$( "#toolbar" ).slideDown('fast');
+							}
+						}, function () {					
+							// Show toolbar if Instructor
+							var cookies = Util.cookiesToArray();
+							if (cookies['role'] == "2") {				
+								$( "#toolbar" ).slideDown('fast');
+								$( "body" ).css('padding-top', '180px');
+								$( "#statusbar" ).css('margin-top', '120px');		
+							}
+						})					
+					}					
+				</script>
 				<div id="browser" class="span2">
 					<ul class="nav nav-list horizontal-center">											
 					</ul>	
@@ -117,5 +281,213 @@
 				</div>
 			</div>			
 		</div>
+		
+		<!-- Modal Dialogs & Forms -->
+		
+		<!-- Create new project -->
+		<div id="newProjectDialog" class="modal hide fade in" aria-hidden="true">
+			<script>
+				// Create the specified project
+				var newProject = function (project) {
+					var projectname = project['name'];
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Creating " + projectname + "...");
+					var data = "name=" + project['name'] + "&description=" + project['description'] + "&newProject=true";
+					
+					$.post(Util.ajax.url, data, function (output) {
+						refreshProjectBrowser();
+						if (output.status == "OK") {																
+							Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Created " + projectname + " successfully.");
+						}
+						else {
+							Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to create project " + projectname + " failed!");
+						}
+					}, Util.ajax.dataType);
+				}
+			</script>
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Create a new project</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<!--<div class="control-group">
+						<label class="control-label" for="courseid">Select course</label>
+						<div class="controls">
+							<select id="courseid">
+							</select>
+						</div>
+					</div>-->
+					<div class="control-group">
+						<label class="control-label" for="name">Name</label>
+						<div class="controls">
+							<input type="text" id="name" placeholder="Project name">
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="description">Description</label>
+						<div class="controls">
+							<textarea id="description" rows="5" maxlength="1000" placeholder="Enter a brief description for the project (max 1000 characters)"></textarea>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<script>
+					$( function () {
+						$( "#newProjectDialog #create" ).click(function () {
+							var name = $( "#newProjectDialog #name" ).val();
+							var description = $( "#newProjectDialog #description" ).val();
+							var project = {
+								"name" : (name) ? name : "test",
+								"description" : (description) ? description : "This is Assignment " + name
+							};						
+							newProject(project);
+						});						
+					} );
+
+				</script>
+				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Create</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>			
+		</div>
+		
+		<!-- Rename project -->
+		<div id="renameProjectDialog" class="modal hide fade in" aria-hidden="true">
+			<script>
+				// Rename the specified project
+				var renameProject = function (oldproject, newproject) {
+					var data = "oldname=" + oldproject['name'] + "&newname=" + newproject['name'] + "&renameProject=true";
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Renaming " +  oldproject['name'] + " to " +
+									  newproject['name'] + "...");
+					
+					$.post(Util.ajax.url, data, function (output) {
+						refreshProjectBrowser();
+						if (output.status == "OK") {																																							
+							Util.changeStatus(Util.StatusBarLevel.SUCCESS, oldproject['name'] + " was renamed to " +
+											  newproject['name'] + " successfully.");
+						}
+						else {
+							Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to rename project " + oldproject['name'] + " failed!");
+						}
+					}, Util.ajax.dataType);														
+				}
+				
+				$( function () {
+					// Populate project list select elements
+					$( ".modal" ).on('show', function () {							
+						// get current list of projects							
+						getProjects(function (projects) {
+							var projectselect = $( ".modal #name" );
+							// Reset the project select element
+							projectselect.empty();
+							// Populate the project select element
+							var nProjects = projects.length;
+							for (var i = 0; i < nProjects; i++) {
+								var oldproject = projects[i].project;
+								$( "<option value='" + oldproject + "'>" + oldproject + "</option>" ).appendTo( projectselect );	
+							}
+							// Set the default option to be the selected project
+							projectselect.find( "option[value='" + selectedProject['name'] + "']" ).attr('selected', 'selected');
+						}, function () {
+							// Reset the project select element
+							$( ".modal #name" ).empty();
+							// No projects, give feedback to user
+							$( "<option value=''>None</option>" ).appendTo( ".modal #name" );
+						}, function () {			
+						});
+					});
+				} );
+			</script>			
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Rename a project</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="name">Select project</label>
+						<div class="controls">
+							<select id="name">
+							</select>
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="new">New name</label>
+						<div class="controls">
+							<input type="text" id="new" placeholder="Project name">
+						</div>
+					</div>					
+				</form>
+			</div>
+			<div class="modal-footer">
+				<script>
+					$( function () {
+						$( "#renameProjectDialog #rename" ).click(function () {
+							var oldproject = $( "#renameProjectDialog #name" ).val(),
+								newproject = $( "#renameProjectDialog #new" ).val();							
+							renameProject({ "name" : oldproject },
+									   { "name" : (newproject) ? newproject : oldproject });
+						});						
+					} );
+				</script>				
+				<button id="rename" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Rename</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>
+		</div>
+		
+		<!-- Delete project -->
+		<div id="deleteProjectDialog" class="modal hide fade in" aria-hidden="true">
+			<script>
+				// Delete the specified project
+				var deleteProject = function (project) {
+					var projectname = project['name'];
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Deleting " + projectname + "...");
+					var data = "name=" + project['name'] + "&deleteProject=true";
+					
+					$.post(Util.ajax.url, data, function (output) {
+						refreshProjectBrowser();
+						if (output.status == "OK") {																																							
+							Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Deleted " + projectname + " successfully.");
+						}
+						else {
+							Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to delete project " + projectname + " failed!");
+						}
+					}, Util.ajax.dataType);						
+				}
+			</script>			
+			<div class="modal-header">
+				<a class="close" data-dismiss="modal" href="#">&times;</a>
+				<h3>Delete a project</h3>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="name">Select project</label>
+						<div class="controls">
+							<select id="name">
+							</select>
+						</div>
+					</div>			
+				</form>
+			</div>
+			<div class="modal-footer">
+				<script>
+					$( function () {
+						$( "#deleteProjectDialog #delete" ).click(function () {
+							var name = $( "#deleteProjectDialog #name" ).val();
+							if (confirm("Are you sure you want to delete project " + name + "?\nWARNING: This will IRREVERSABLY delete all users' files belonging to this project as well.")) {								
+								var project = {
+									"name" : name
+								};						
+								deleteProject(project);															
+							}							
+						});						
+					} );
+
+				</script>				
+				<button id="delete" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Delete</button>
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			</div>
+		</div>		
 	</body>
 </html>

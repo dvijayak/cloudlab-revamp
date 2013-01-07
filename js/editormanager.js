@@ -7,6 +7,7 @@ function EditorManager () {
     this.eRenderer = this.editor.renderer;
     this.editor.setTheme("ace/theme/twilight");
     this.eSession.setMode("ace/mode/c_cpp");
+    this.editor.setReadOnly(true);
     this.editor.setHighlightActiveLine(false);
     this.eSession.setUseWrapMode(true);
     this.editor.setValue("Welcome to your project! Select a file to edit.");
@@ -24,7 +25,14 @@ function EditorManager () {
     this.tRenderer.setShowPrintMargin(false);    
     
     
-    /* Custom key bindings */    
+    /* Custom key bindings */
+    this.editor.commands.addCommand({
+        name: 'newFile',
+        bindKey: {win: 'Ctrl-Alt-N', mac: 'Command-Option-N'},
+        exec: function(editor) {            
+            $( "#newFileDialog").modal({keyboard:true});
+        }
+    });
     this.editor.commands.addCommand({
         name: 'saveFile',
         bindKey: {win: 'Ctrl-S', mac: 'Command-S'},
@@ -32,8 +40,6 @@ function EditorManager () {
             saveFile();
         }
     });
-
-    
     
     /* Custom Editor Functions */
     

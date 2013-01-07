@@ -37,22 +37,70 @@
             }
         }        
         
-        public function query ($query) {
-            if (!($result = mysql_query($query))) {
-                $this->result = null;                
-            }
-            else {
-                $this->result = mysql_query($query, $this->link);
-            }            
+        public function query ($query) {            
+            $this->result = mysql_query($query, $this->link);            
             return $this->result;
         }
         
-        public function queryfetchAssoc ($query) {            
-            $array = mysql_fetch_assoc($this->query($query));
-            if (mysql_num_rows($this->result) == 0) {
-                $array = null;
-            }            
-            return $array;
+        /*
+         * Query the DB and read the results into an associative array
+         */
+        public function queryFetchAssoc ($query) {                                
+			$result = $this->query($query);
+            return $this->fetchAssoc($result);
+        }
+        
+        /*
+         * Read the specified result items into an array of associative arrays
+         */
+        public function fetchAssoc ($result) {
+            // Faulty query or some other error
+            if (!$result) {                
+                return NULL;
+            }
+            // No results
+            else if (mysql_num_rows($result) == 0) {                    
+                return 0;
+            }
+            else {                            
+                // Iterate as long as we have rows in the result set  
+                $items = array();
+                while ($row = mysql_fetch_assoc($result)) {
+                    array_push($items, $row);                    
+                }                
+                return $items;
+            }              
+        }
+        
+        /*
+         * Process the latest query result into an array of associative arrays
+         */
+        public function fetchLatestAssoc () {
+            return $this->fetchAssoc($this->result);
+        }
+        
+        /*
+         * Chain an array of queries together
+         */
+        public function queryChain ($queries) {
+            $results = array();
+            foreach ($queries as $query) {
+                $result = $this->query($query);
+                array_push($results, $result);
+            }
+            return $results;
+        }
+        
+        /*
+         * Chain multiple queries together and process into associative arrays
+         */
+        public function queryChainFetchAssoc ($queries) {
+            $results = $this->queryChain($queries);
+            $items = array();
+            foreach ($results as $result) {
+                array_push($items, $this->fetchAssoc($result));
+            }
+            return $items;
         }
         
         /**

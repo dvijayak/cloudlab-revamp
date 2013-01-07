@@ -15,21 +15,32 @@
 				Util.validateSession(function (output) {
 						if (output.status == "OK") {
 							// Generate list of courses for the user
-							var courses = output.data.courses;
-							var nCourses = courses.length;
-							for (var i = 0; i < nCourses; i++) {
+							var courses = output.data.courses;							
+							var nCourses = courses.length;							
+							for (var i = 0; i < nCourses; i++) {								
 								// Create the UI elements
 								/* Note: by passing a data map to the click handler, we preserve the value of courses[i].
 								 * Otherwise, courses[i] would take the value of undefined
 								 */
 								// Clicking on a course takes the user to the projects browser for that course
-								$( "<li><a href='#'>" + courses[i].toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
-									var data = "course=" + event.data.course;								
-									$.post(Util.ajax.url, data, function (output) {									
-										if (output.status == "OK") {										
-											window.location.href="projects.html";
-										}
-									}, Util.ajax.dataType);								
+								$( "<li><a href='#'>" + courses[i].course.toUpperCase() + "</a></li>").click({course: courses[i]}, function (event) {
+									if (!$( this ).attr('class') ||
+										$( this ).attr('class').search("active") === -1) {
+										// Clear all other active states
+										for (var j = 0; j < nCourses; j++) {
+											$( "#browser ul li:contains('" + courses[j].course.toUpperCase() + "')" ).removeClass("active");	
+										}								
+										// Set this as active
+										$( this ).addClass("active");	
+									}
+									else {
+										var data = "course=" + event.data.course.course;								
+										$.post(Util.ajax.url, data, function (output) {									
+											if (output.status == "OK") {										
+												window.location.href="projects.html";
+											}
+										}, Util.ajax.dataType);
+									}
 								}).appendTo( "#browser ul" );
 							}
 						}
@@ -38,6 +49,11 @@
 						}
 					}, data);
 				
+			});
+			
+			$( document ).ready(function () {
+				// Push the page on to the back stack
+				Util.back.add();
 			});
 		</script>		
         <!-- Bootstrap -->
@@ -61,9 +77,6 @@
 	<body>		
 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
 			<div class="navbar-inner">
-				<div class="pull-left">
-					<a id="back" class="btn btn-primary" href="#"><i class="icon-arrow-left icon-white"></i> Back</a>
-				</div>
 				<ul class="nav">					
 					<li>
 						<p class="navbar-text">Choose Course</p>

@@ -6,7 +6,7 @@
         private $dbm;
         private $defaults;
         
-        function __construct($dbm) {
+        public function __construct($dbm) {
             //$this->s3 = new AmazonS3();
             $this->dbm = $dbm;
             
@@ -14,9 +14,41 @@
             $this->defaults->files = new stdClass();
             $this->defaults->files->c = "#include <stdio.h>\n\nint main(void) {\n\tprintf(\"Hello world\\n\");\n\treturn 0;\n}\n";
             $this->defaults->files->cpp = "#include <iostream>\n\nint main(void) {\n\tstd::cout << \"Hello world\" << std::endl;\n\treturn 0;\n}\n";
-        }
+        }                
         
-        
+        /**
+         * Open the specified file by returning its contents
+         * (playground: the file must be owned by the instructor)
+         */
+        public function openFile ($username, $course, $project, $file) {
+            $username = mysql_real_escape_string($username);
+            $course = mysql_real_escape_string($course);
+            $project = mysql_real_escape_string($project);
+            $filename = mysql_real_escape_string($file['name']);
+            $ext = mysql_real_escape_string($file['ext']);
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Retrieve the instructor for the given course (playground)
+            $subquery2 = "SELECT Enrollments.user_id FROM Users, Enrollments WHERE Users.user_id = Enrollments.user_id AND Enrollments.course_id = '" . $course . "' AND Users.group_id = 2";
+            // Retrieve the contents of the specified file
+            $query = "SELECT file_data FROM Files" .
+            " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
+            "' AND file_ext='" . $ext . "' AND file_owner IN (" . $subquery2 . ");";
+                        
+            
+            $result = $this->dbm->query($query);
+            if (!$result) {                
+                return false;
+            }
+            else if (mysql_num_rows($result) == 0) {
+                return "";
+            }
+            else {                
+                $result = mysql_fetch_assoc($result);                
+                $contents = $result['file_data'];                
+                return $contents;
+            }  
+        }        
         
         public function createFile ($username, $course, $project, $file) {
             $username = mysql_real_escape_string($username);
@@ -24,10 +56,10 @@
             $project = mysql_real_escape_string($project);
             $filename = mysql_real_escape_string($file['name']);
             $ext = mysql_real_escape_string($file['ext']);
-            //$contents = mysql_real_escape_string(($file['contents']) ? $file['contents'] : "");
+            //$contents = mysql_real_escape_string(($file['contents']) ? $file['contents'] : "");            
             $contents = "// New file: " . $filename.".".$ext . "\n\n";
             if ($ext == "c") {
-                $contents = "/* New file " . $filename.".".$ext . "*/\n\n" . $this->defaults->files->c;    
+                $contents = "/* New file: " . $filename.".".$ext . " */\n\n" . $this->defaults->files->c;    
             }
             else if ($ext == "cpp") {
                 $contents .= $this->defaults->files->cpp;
@@ -39,111 +71,8 @@
             $query = "INSERT INTO Files (file_name, file_ext, project_id, file_owner, file_data)" .
             " VALUES ('" . $filename . "', '" . $ext . "', (" . $subquery . "), '" . $username . "', '" . $contents . "');";
                                 
-            $success = $this->dbm->query($query);
-            $success = true; // TODO: temporary fix
+            $success = $this->dbm->query($query);            
             return $success;           
-        }
-        
-        public function deleteFile ($username, $course, $project, $file) {
-            $username = mysql_real_escape_string($username);
-            $course = mysql_real_escape_string($course);
-            $project = mysql_real_escape_string($project);
-            $filename = mysql_real_escape_string($file['name']);
-            $ext = mysql_real_escape_string($file['ext']);            
-            // Retrieve the project id for the given pair of course id and project name
-            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
-            // Delete the file from the table
-            $query = "DELETE FROM Files" .
-            " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
-            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
-            
-            $success = $this->dbm->query($query);
-            $success = true; // TODO: temporary fix
-            return $success;            
-        }
-        
-        /**
-         * Retrieve the list of files for the chosen project
-         */
-        public function getFiles ($username, $course, $project) {
-            $username = mysql_real_escape_string($username);
-            $course = mysql_real_escape_string($course);
-            $project = mysql_real_escape_string($project);
-            // Retrieve the project id for the given pair of course id and project name
-            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
-            // Retrieve the list of files for the given project id which is owned by the given user
-            $query = "SELECT Enrollments.course_id, Projects.project_name, Files.*" .
-            " FROM Enrollments, Projects, Files WHERE Files.file_owner = '" . $username . // Note that each new line continuation begins with a space
-            "' AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
-            " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";
-            
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $files = null;
-                }
-                // Iterate as long as we have rows in the result set  
-                $files = array();
-                while ($row = mysql_fetch_assoc($result)) {                    
-                    array_push($files, array(
-                        "name" => $row['file_name'],
-                        "ext" => $row['file_ext']
-                        //"contents" => $row['file_data'],                                            
-                    ));
-                }                
-                return $files;
-            }        
-        }
-        
-        public function openFile ($username, $course, $project, $file) {
-            $username = mysql_real_escape_string($username);
-            $course = mysql_real_escape_string($course);
-            $project = mysql_real_escape_string($project);
-            $filename = mysql_real_escape_string($file['name']);
-            $ext = mysql_real_escape_string($file['ext']);
-            // Retrieve the project id for the given pair of course id and project name
-            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
-            // Retrieve the contents of the specified file
-            $query = "SELECT file_data FROM Files" .
-            " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
-            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
-            
-            if (($result = $this->dbm->query($query)) == null) {                
-                return null;
-            }
-            else {                
-                if (mysql_num_rows($result) == 0) {                    
-                    $contents = "";                    
-                }
-                else {
-                    // Iterate as long as we have rows in the result set                  
-                    while ($row = mysql_fetch_assoc($result)) {                    
-                        $contents = $row['file_data'];
-                    }
-                }
-                //var_dump($contents);
-                return $contents;
-            }
-        }
-        
-        public function saveFile ($username, $course, $project, $file) {
-            $username = mysql_real_escape_string($username);
-            $course = mysql_real_escape_string($course);
-            $project = mysql_real_escape_string($project);
-            $filename = mysql_real_escape_string($file['name']);
-            $ext = mysql_real_escape_string($file['ext']);
-            $contents = mysql_real_escape_string($file['contents']);
-            // Retrieve the project id for the given pair of course id and project name
-            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
-            // Set the contents of the specified file
-            $query = "UPDATE Files SET file_data = '" . $contents .
-            "' WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
-            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
-            
-            $success = $this->dbm->query($query);
-            return $success;
         }
         
         public function renameFile ($username, $course, $project, $old, $new) {
@@ -163,8 +92,66 @@
             
             $success = $this->dbm->query($query);
             return $success;
+        }        
+        
+        public function deleteFile ($username, $course, $project, $file) {
+            $username = mysql_real_escape_string($username);
+            $course = mysql_real_escape_string($course);
+            $project = mysql_real_escape_string($project);
+            $filename = mysql_real_escape_string($file['name']);
+            $ext = mysql_real_escape_string($file['ext']);            
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Delete the file from the table
+            $query = "DELETE FROM Files" .
+            " WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
+            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
+            
+            $success = $this->dbm->query($query);            
+            return $success;            
         }
-
+        
+        public function saveFile ($username, $course, $project, $file) {
+            $username = mysql_real_escape_string($username);
+            $course = mysql_real_escape_string($course);
+            $project = mysql_real_escape_string($project);
+            $filename = mysql_real_escape_string($file['name']);
+            $ext = mysql_real_escape_string($file['ext']);
+            $contents = mysql_real_escape_string($file['contents']);
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Set the contents of the specified file
+            $query = "UPDATE Files SET file_data = '" . $contents .
+            "' WHERE project_id = (" . $subquery . ") AND file_name = '" .$filename.
+            "' AND file_ext='" . $ext . "' AND file_owner = '" . $username . "';";
+            
+            $success = $this->dbm->query($query);
+            return $success;
+        }        
+        
+        /**
+         * Retrieve the list of files for the chosen project (playground: retrieve files
+         * owned/created by the instructor of the course)
+         */
+        public function getFiles ($username, $course, $project) {
+            $username = mysql_real_escape_string($username);
+            $course = mysql_real_escape_string($course);
+            $project = mysql_real_escape_string($project);
+            // Retrieve the project id for the given pair of course id and project name
+            $subquery = "SELECT project_id FROM Projects WHERE course_id = '" . $course . "' AND project_name = '" . $project . "'";
+            // Retrieve the instructor for the given course (playground)
+            $subquery2 = "SELECT Enrollments.user_id FROM Users, Enrollments WHERE Users.user_id = Enrollments.user_id AND Enrollments.course_id = '" . $course . "' AND Users.group_id = 2";
+            // Retrieve the list of files for the given project id which is owned by the given user
+            $query = "SELECT Enrollments.course_id AS 'course', Projects.project_name AS 'project'," .
+            " Files.file_id AS 'id', Files.file_name AS 'name', Files.file_ext AS 'ext', Files.project_id, Files.file_owner AS 'owner', Files.file_data AS 'contents'" .
+            " FROM Enrollments, Projects, Files WHERE Files.file_owner IN (" . $subquery2 . ")" . // Note that each new line continuation begins with a space
+            " AND Projects.project_id = (" . $subquery . ") AND Enrollments.course_id = Projects.course_id" .
+            " AND Projects.project_id = Files.project_id AND Enrollments.user_id = Files.file_owner;";                        
+            
+            $files = $this->dbm->queryFetchAssoc($query);            
+			return $files;		       
+        }
+        
     }
 	  
 ?>
