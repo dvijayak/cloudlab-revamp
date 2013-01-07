@@ -37,6 +37,52 @@
                     "projects" => $projects
                 ));
             }
+            // Create the specified project
+            else if (!empty($_POST['newProject'])) {                
+                $course = $_COOKIE['course'];                
+                $project = array(
+                    "name" => $_POST['name'],
+                    "description" => $_POST['description']
+                );  
+                $success = $main->getProjectManager()->createProject($course, $project);                
+                if ($success) {                    
+                    $output = $main->buildResponse();
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }
+            }            
+            // Rename the specified project
+            else if (!empty($_POST['renameProject'])) {
+                $course = $_COOKIE['course'];                                
+                $old = array(
+                    "name" => $_POST['oldname']                    
+                );
+                $new = array(
+                    "name" => $_POST['newname']                    
+                );
+                $success = $main->getProjectManager()->renameProject($course, $old, $new);                
+                if ($success) {                    
+                    $output = $main->buildResponse();                
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }
+            }
+            // Delete the specified project
+            else if (!empty($_POST['deleteProject'])) {
+                $course = $_COOKIE['course'];                
+                $project = array(
+                    "name" => $_POST['name']                    
+                );  
+                $success = $main->getProjectManager()->deleteProject($course, $project);
+                if ($success) {                    
+                    $output = $main->buildResponse();
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }
+            }            
             // Get the list of files for the chosen project
             else if (!empty($_POST['getFiles'])) {
                 $user = $_COOKIE['username'];
@@ -47,6 +93,24 @@
                     "files" => $files
                 ));
             }
+            // Create the specified file
+            else if (!empty($_POST['newFile'])) {
+                $user = $_COOKIE['username'];
+                $course = $_COOKIE['course'];
+                $project = $_COOKIE['project'];
+                $file = array(
+                    "name" => $_POST['name'],
+                    "ext" => $_POST['ext']/*,
+                    "contents" => $_POST['contents']*/
+                );  
+                $success = $main->getFileManager()->createFile($user, $course, $project, $file);                
+                if ($success) {                    
+                    $output = $main->buildResponse();
+                }
+                else {
+                    $output = $main->buildResponse(array(), "FAIL");
+                }
+            }            
             // Open (retrieve the contents of) the specified file
             else if (!empty($_POST['openFile'])) {
                 $user = $_COOKIE['username'];
@@ -95,24 +159,6 @@
                 $success = $main->getFileManager()->renameFile($user, $course, $project, $old, $new);
                 if ($success) {                    
                     $output = $main->buildResponse();                
-                }
-                else {
-                    $output = $main->buildResponse(array(), "FAIL");
-                }
-            }
-            // Create the specified file
-            else if (!empty($_POST['newFile'])) {
-                $user = $_COOKIE['username'];
-                $course = $_COOKIE['course'];
-                $project = $_COOKIE['project'];
-                $file = array(
-                    "name" => $_POST['name'],
-                    "ext" => $_POST['ext']/*,
-                    "contents" => $_POST['contents']*/
-                );  
-                $success = $main->getFileManager()->createFile($user, $course, $project, $file);                
-                if ($success) {                    
-                    $output = $main->buildResponse();
                 }
                 else {
                     $output = $main->buildResponse(array(), "FAIL");

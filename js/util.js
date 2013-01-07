@@ -123,7 +123,38 @@ function Util () {
                 }
             };  
         $.post(Util.ajax.url, data, success, Util.ajax.dataType);
-    };        
+        // Clear the back stack
+        if (window.sessionStorage) {
+            delete sessionStorage.stack;
+        }
+    };
+    
+    // A mapping between human-readable status levels and their respective classes
+    this.StatusBarLevel = {
+        NORMAL : "alert",
+        SUCCESS : "alert alert-success",
+        INTERIM : "alert alert-info",
+        WARNING : "alert alert-warning",
+        ERROR : "alert alert-error"
+    };
+    
+    // Changes the visual indication of the status as specified and displays the specified message in the status bar
+    this.changeStatus = function (status, message) {
+        // Get all the classes that are currently attached to the element
+        var oldClasses = $( "#statusbar #status" ).attr('class');
+        // Remove the old classes and attach the new class
+        $( "#statusbar #status" ).toggleClass(oldClasses + " " + status);
+        // If a message is provided, display it
+        if (message !== undefined) {
+            $( "#statusbar #status" ).text(message);
+            // Return the status bar back to normal after 3 seconds
+            if (message != "Ready.") { // Avoids an endless recursive loop
+                setTimeout(function () {                            
+                            Util.changeStatus(Util.StatusBarLevel.NORMAL, "Ready.")
+                        }, 3500);
+            }
+        }				
+    }    
     
 };
 

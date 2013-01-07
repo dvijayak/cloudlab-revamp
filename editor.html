@@ -54,7 +54,7 @@
 						}					
 					}
 					else if (output.status == "FAIL") {
-						changeStatus(StatusBarLevel.ERROR, "Unable to display files for unknown reasons!");
+						Util.changeStatus(Util.StatusBarLevel.ERROR, "Unable to display files for unknown reasons!");
 					}
 					if (always !== undefined) {
 						// Carry out the following procedure always
@@ -140,7 +140,7 @@
 			// Open the specified file and load its contents in the editor
 			var openFile = function (file) {
 				var name = file['name'] + "." + file['ext'];
-				changeStatus(StatusBarLevel.NORMAL, "Opening " +  name + "...");				
+				Util.changeStatus(Util.StatusBarLevel.NORMAL, "Opening " +  name + "...");				
 				
 				var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&openFile=true";
 				$.post(Util.ajax.url, data, function (output) {
@@ -151,41 +151,14 @@
 							"ext" : file['ext']
 						};
 						EM.editor.setValue(output.data.contents, 1);																		
-						changeStatus(StatusBarLevel.SUCCESS, name + " was opened successfully.");
+						Util.changeStatus(Util.StatusBarLevel.SUCCESS, name + " was opened successfully.");
 					}
 					else {						
-						changeStatus(StatusBarLevel.ERROR, "Attempt to open " + name + " failed!");
+						Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to open " + name + " failed!");
 					}
 				}, Util.ajax.dataType);										
 			}
-			
-			// A mapping between human-readable status levels and their respective classes
-			var StatusBarLevel = {
-				NORMAL : "alert",
-				SUCCESS : "alert alert-success",
-				INTERIM : "alert alert-info",
-				WARNING : "alert alert-warning",
-				ERROR : "alert alert-error"
-			}
-			
-			// Changes the visual indication of the status as specified and displays the specified message in the status bar
-			var changeStatus = function (status, message) {
-				// Get all the classes that are currently attached to the element
-				var oldClasses = $( "#statusbar #status" ).attr('class');
-				// Remove the old classes and attach the new class
-				$( "#statusbar #status" ).toggleClass(oldClasses + " " + status);
-				// If a message is provided, display it
-				if (message !== undefined) {
-					$( "#statusbar #status" ).text(message);
-					// Return the status bar back to normal after 3 seconds
-					if (message != "Ready.") { // Avoids an endless recursive loop
-						setTimeout(function () {
-									changeStatus(StatusBarLevel.NORMAL, "Ready.")
-								}, 3500);
-					}
-				}				
-			}
-			
+
 			$( document ).ready(function () {
 				// Push the page on to the back stack
 				Util.back.add();
@@ -206,12 +179,6 @@
 			#toolbar {
 				margin-top: 60px;
 				display: none;
-			}
-			
-			#statusbar {
-				margin-top: 60px;
-				text-align: center;
-				line-height: 60px;
 			}
 			
 			/* Get a child container to fill up a parent container
@@ -304,16 +271,16 @@
 				// Save the contents of the current file in the editor
 				function saveFile () {
 					var file = clickedFile['name'] + "." + clickedFile['ext'];
-					changeStatus(StatusBarLevel.NORMAL, "Saving " +  file + "...");
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Saving " +  file + "...");
 					var contents = EM.editor.getValue();
 					var data = "name=" + clickedFile['name'] + "&ext=" + clickedFile['ext'] +
 						"&contents=" + contents + "&saveFile=true";
 					$.post(Util.ajax.url, data, function (output) {						
 						if (output.status == "OK") {
-							changeStatus(StatusBarLevel.SUCCESS, file + " was saved successfully.");							
+							Util.changeStatus(Util.StatusBarLevel.SUCCESS, file + " was saved successfully.");							
 						}
 						else {
-							changeStatus(StatusBarLevel.ERROR, "Attempt to save " + file + " failed!");							
+							Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to save " + file + " failed!");							
 						}
 					}, Util.ajax.dataType);
 				}
@@ -363,12 +330,14 @@
 						});
 						
 						$( "#deleteFileDialog #delete" ).click(function () {
-							var filename = $( "#deleteFileDialog #filename" ).val().split(".");							
-							var file = {
-								"name" : filename[0],
-								"ext" : filename[1]
-							};
-							deleteFile(file);							
+							if (confirm("Are you sure you want to delete file " + $( "#deleteFileDialog #filename" ).val() + "?")) {
+								var filename = $( "#deleteFileDialog #filename" ).val().split(".");							
+								var file = {
+									"name" : filename[0],
+									"ext" : filename[1]
+								};
+								deleteFile(file);
+							}
 						});						
 					})
 					
@@ -403,16 +372,16 @@
 					// Create the specified file
 					var newFile = function (file) {
 						var filename = file['name'] + "." + file['ext'];
-						changeStatus(StatusBarLevel.NORMAL, "Creating " + filename + "...");
+						Util.changeStatus(Util.StatusBarLevel.NORMAL, "Creating " + filename + "...");
 						var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&newFile=true";
 						
 						$.post(Util.ajax.url, data, function (output) {
 							refreshFileBrowser();
 							if (output.status == "OK") {																
-								changeStatus(StatusBarLevel.SUCCESS, "Created " + filename + " successfully.");
+								Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Created " + filename + " successfully.");
 							}
 							else {
-								changeStatus(StatusBarLevel.ERROR, "Attempt to create file " + filename + " failed!");
+								Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to create file " + filename + " failed!");
 							}
 						}, Util.ajax.dataType);
 					}
@@ -422,17 +391,17 @@
 						var data = "oldname=" + oldfile['name'] + "&oldext=" + oldfile['ext'] + 
 							"&newname=" + newfile['name'] + "&newext=" + newfile['ext'] +
 							"&renameFile=true";
-						changeStatus(StatusBarLevel.NORMAL, "Renaming " +  oldfile['name'] + "." + oldfile['ext'] +
+						Util.changeStatus(Util.StatusBarLevel.NORMAL, "Renaming " +  oldfile['name'] + "." + oldfile['ext'] +
 									 " to " + newfile['name'] + "." + newfile['ext'] + "...");
 						
 						$.post(Util.ajax.url, data, function (output) {
 							refreshFileBrowser();
 							if (output.status == "OK") {																																							
-								changeStatus(StatusBarLevel.SUCCESS, oldfile['name'] + "." + oldfile['ext'] +
+								Util.changeStatus(Util.StatusBarLevel.SUCCESS, oldfile['name'] + "." + oldfile['ext'] +
 									 " was renamed to " + newfile['name'] + "." + newfile['ext'] + " successfully.");
 							}
 							else {
-								changeStatus(StatusBarLevel.ERROR, "Attempt to rename file " + oldfile + " failed!");
+								Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to rename file " + oldfile + " failed!");
 							}
 						}, Util.ajax.dataType);
 					}
@@ -440,16 +409,16 @@
 					// Delete the specified file
 					var deleteFile = function (file) {
 						var filename = file['name'] + "." + file['ext'];
-						changeStatus(StatusBarLevel.NORMAL, "Deleting " + filename + "...");
+						Util.changeStatus(Util.StatusBarLevel.NORMAL, "Deleting " + filename + "...");
 						var data = "name=" + file['name'] + "&ext=" + file['ext'] + "&deleteFile=true";
 						
 						$.post(Util.ajax.url, data, function (output) {
 							refreshFileBrowser();
 							if (output.status == "OK") {																																							
-								changeStatus(StatusBarLevel.SUCCESS, "Deleted " + filename + " successfully.");
+								Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Deleted " + filename + " successfully.");
 							}
 							else {
-								changeStatus(StatusBarLevel.ERROR, "Attempt to delete file " + filename + " failed!");
+								Util.changeStatus(Util.StatusBarLevel.ERROR, "Attempt to delete file " + filename + " failed!");
 							}
 						}, Util.ajax.dataType);						
 					}
@@ -674,20 +643,20 @@
 				var socket = io.connect(url);
 				
 				$( "#compile" ).click(function () {
-					changeStatus(StatusBarLevel.NORMAL, "Compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
 					var data = buildMessage(["contents"],
 											[EM.editor.getValue()]);
 					socket.emit('compile', data);
 				});
 				
 				$( "#run" ).click(function () {
-					changeStatus(StatusBarLevel.INTERIM, "Executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
+					Util.changeStatus(Util.StatusBarLevel.INTERIM, "Executing " +  clickedFile['name'] + "." + clickedFile['ext'] + "...");					
 					var data = buildMessage();
 					socket.emit('run', data);
 				});
 				
 				$( "#compilerun" ).click(function () {
-					changeStatus(StatusBarLevel.NORMAL, "Compiling and executing" +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
+					Util.changeStatus(Util.StatusBarLevel.NORMAL, "Compiling and executing" +  clickedFile['name'] + "." + clickedFile['ext'] + "...");
 					$( "#statusbar" ).text();
 					var data = buildMessage(["contents"],
 											[EM.editor.getValue()]);
@@ -714,13 +683,13 @@
 				socket.on('output', function(data) {
 					// If the response is valid JSON, it is runtime output
 					try {
-						changeStatus(StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
+						Util.changeStatus(Util.StatusBarLevel.SUCCESS, "Finished executing " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
 						var jsonData = JSON.parse(data);						
 						EM.appendValue(jsonData.stderr + "===========\n" + jsonData.stdout, EM.terminal);
 					}
 					// else, it is compiler output
 					catch (e) {
-						changeStatus(StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
+						Util.changeStatus(Util.StatusBarLevel.INTERIM, "Finished compiling " +  clickedFile['name'] + "." + clickedFile['ext'] + ".");
 						EM.appendValue(data, EM.terminal);
 					}
 					

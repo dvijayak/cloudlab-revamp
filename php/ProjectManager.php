@@ -11,6 +11,48 @@
         }                
         
         /**
+         * Create the specified project for the provided course
+         */
+        public function createProject ($course, $project) {
+            $course = mysql_real_escape_string($course);
+            $name = mysql_real_escape_string($project['name']);
+            $description = mysql_real_escape_string($project['description']);
+            $query = "INSERT INTO Projects (course_id, project_name, project_desc)" .
+            " VALUES ('" . $course . "', '" . $name . "', '" . $description . "');";
+                                
+            $success = $this->dbm->query($query);            
+            return $success;              
+        }
+        
+        /**
+         * Rename the specified project for the provided course
+         */
+        public function renameProject ($course, $old, $new) {
+            $course = mysql_real_escape_string($course);            
+            $oldname = mysql_real_escape_string($old['name']);
+            $newname = mysql_real_escape_string($new['name']);
+            // Rename the project
+            $query = "UPDATE Projects SET project_name = '" . $newname .
+            "' WHERE course_id = '" . $course . "' AND project_name = '" . $oldname . "';";
+            
+            $success = $this->dbm->query($query);
+            return $success;                    
+        }        
+        
+        /**
+         * Delete the specified project for the provided course
+         */
+        public function deleteProject ($course, $project) {
+            $course = mysql_real_escape_string($course);
+            $name = mysql_real_escape_string($project['name']);            
+            $query = "DELETE FROM Projects WHERE course_id = '" . $course . "'" .
+            " AND project_name = '" . $name . "'";
+                                
+            $success = $this->dbm->query($query);            
+            return $success;              
+        }        
+        
+        /**
          * Retrieve the list of projects of the chosen course
          */
         public function getProjects ($course) {        
