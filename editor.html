@@ -546,11 +546,27 @@
 			</div>
 			<div class="modal-body">
 				<form class="form-horizontal">
+					<script>
+						$( function () {
+							// Listen for changes in settings
+							$( ".preference" ).on('change', function () {
+								var newValue,
+									element = $ ( this );
+								if ( element.attr('type') == 'checkbox') {
+									newValue = element.is(':checked');
+								}
+								else {
+									newValue = element.val();	
+								}
+								EM.setPreference(element.prop('id'), newValue);
+							})
+						});
+					</script>
 					<!-- Theme -->
 					<div class="control-group">
 						<label class="control-label" for="theme">Theme</label>
 						<div class="controls">
-							<select id="theme">
+							<select id="theme" class="preference">
 								<option value="twilight">Twilight</option>
 								<option value="cobalt">Cobalt</option>
 								<option value="textmate">Textmate</option>
@@ -562,14 +578,14 @@
 					<div class="control-group">
 						<label class="control-label" for="fontsize">Font size</label>
 						<div class="controls">
-							<input id="fontsize" type="number" min="8" max="72" placeholder="8">
+							<input id="fontsize" class="preference" type="number" min="8" max="72" placeholder="8">
 						</div>
 					</div>
 					<!-- Tab width -->
 					<div class="control-group">
 						<label class="control-label" for="tabwidth">Tab width</label>
 						<div class="controls">
-							<input id="tabwidth" type="number" min="1" max="8" placeholder="4">
+							<input id="tabwidth" class="preference" type="number" min="1" max="8" placeholder="4">
 						</div>
 					</div>					
 					<!-- Soft tabs -->
@@ -577,7 +593,7 @@
 						<label class="control-label" for="softtabs" rel="tooltip" data-placement="right" title="Enable soft tabs">Soft tabs</label>						
 						<div class="controls">							
 							<label class="checkbox">
-								<input id="softtabs" type="checkbox" rel="tooltip" data-placement="right" title="Enable soft tabs">
+								<input id="softtabs" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Enable soft tabs">
 							</label>						
 						</div>
 					</div>
@@ -586,7 +602,7 @@
 						<label class="control-label" for="showlinenos" rel="tooltip" data-placement="right" title="Show line numbers on the left">Line numbers</label>
 						<div class="controls">
 							<label class="checkbox">
-								<input id="showlinenos" type="checkbox" rel="tooltip" data-placement="right" title="Show line numbers on the left">
+								<input id="showlinenos" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show line numbers on the left">
 							</label>							
 						</div>						
 					</div>
@@ -594,7 +610,7 @@
 					<div class="control-group">
 						<label class="control-label" for="activeline" rel="tooltip" data-placement="right" title="Highlight the active line">Active line</label>
 						<div class="controls">							
-							<input id="activeline" type="checkbox" rel="tooltip" data-placement="right" title="Highlight the active line">
+							<input id="activeline" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Highlight the active line">
 						</div>
 					</div>
 					<!-- Show print margin -->
@@ -602,7 +618,7 @@
 						<label class="control-label" for="printmargin" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">Print margin</label>
 						<div class="controls">
 							<label class="checkbox">
-								<input id="printmargin" type="checkbox" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">
+								<input id="printmargin" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">
 							</label>
 						</div>
 					</div>
@@ -611,7 +627,7 @@
 						<label class="control-label" for="wordwrap" rel="tooltip" data-placement="right" title="Wrap words that overflow">Word wrap</label>
 						<div class="controls">
 							<label class="checkbox">
-								<input id="wordwrap" type="checkbox" rel="tooltip" data-placement="right" title="Wrap words that overflow">
+								<input id="wordwrap" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Wrap words that overflow">
 							</label>
 						</div>
 					</div>

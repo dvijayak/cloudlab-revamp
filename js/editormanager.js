@@ -7,7 +7,7 @@ function EditorManager () {
     this.eRenderer = this.editor.renderer;
     this.editor.setTheme("ace/theme/twilight");
     this.eSession.setMode("ace/mode/c_cpp");
-    this.editor.setReadOnly(true);
+    //this.editor.setReadOnly(true);
     this.editor.setHighlightActiveLine(false);
     this.eSession.setUseWrapMode(true);
     this.editor.setValue("Welcome to your project! Select a file to edit.");
@@ -50,7 +50,39 @@ function EditorManager () {
         //oldValue += "\n";
         
         aceEditor.setValue(oldValue + newValue, 1);
-    }
+    };
+    
+    this.setPreference = function (preference, value, aceEditor) {
+        var editor = (aceEditor) ? aceEditor : EM.editor;
+        switch (preference) {
+            case 'theme':
+                editor.setTheme(value);
+                break;
+            case 'fontsize':
+                $( document ).ready(function () {
+                    $( "#editor" ).css('font-size', value);  
+                })                
+                break;
+            case 'tabwidth':
+                editor.getSession().setTabSize(value);
+                break;
+            case 'softtabs':
+                editor.getSession().setUseSoftTabs(value);
+                break;
+            case 'showlinenos':
+                editor.renderer.setShowGutter(value);
+                break;
+            case 'activeline':
+                editor.setHighlightActiveLine(value);
+                break;
+            case 'printmargin':
+                editor.setShowPrintMargin(value);
+                break;
+            case 'wordwrap':
+                editor.getSession().setUseWrapMode(value);
+                break;
+        }
+    };
     
 }
 
