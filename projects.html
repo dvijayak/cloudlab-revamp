@@ -97,53 +97,6 @@
 					}
 				}), data);			
 			
-			//Util.validateSession(function (output) {
-			//	if (output.status == "OK") {					
-			//		// Generate list of projects for the chosen course					
-			//		var projects = output.data.projects;
-			//		var nProjects = projects.length;
-			//		for (var i = 0; i < nProjects; i++) {
-			//			// Create the UI elements
-			//			/* Note: by passing a data map to the click handler, we preserve the value of projects[i].
-			//			 * Otherwise, projects[i] would take the value of undefined
-			//			 */
-			//			// Clicking on a project takes the user to the editor for the project
-			//			$( "<li><a href='#'>" + projects[i].project.toUpperCase() + "</a></li>").click({project: projects[i]}, function (event) {							
-			//				if (!$( this ).attr('class') ||
-			//					$( this ).attr('class').search("active") === -1) {
-			//					// Clear all other active states
-			//					for (var j = 0; j < nProjects; j++) {
-			//						$( "#browser ul li:contains('" + projects[j].project.toUpperCase() + "')" ).removeClass("active");	
-			//					}								
-			//					// Set this as active
-			//					$( this ).addClass("active");	
-			//				}
-			//				else {
-			//					var data = "project=" + event.data.project.project;								
-			//					$.post(Util.ajax.url, data, function (output) {									
-			//						if (output.status == "OK") {										
-			//							window.location.href="editor.html";
-			//						}
-			//					}, Util.ajax.dataType);			
-			//				}											
-			//			}).appendTo( "#browser ul" );
-			//		}
-			//	}
-			//	else if (output.status == "ZERO_RESULTS") {
-			//		$( "#browser ul" ).text("There are no projects for this course.");
-			//		var cookies = Util.cookiesToArray();
-			//		if (cookies['role'] == "2") {
-			//			$( "#toolbar" ).slideDown('fast');
-			//		}
-			//	}
-			//	// Show toolbar if Instructor
-			//	var cookies = Util.cookiesToArray();
-			//	if (cookies['role'] == "2") {				
-			//		$( "#toolbar" ).slideDown('fast');
-			//		$( "body" ).css('padding-top', '120px');
-			//	}				
-			//}, data);
-			
 			$( document ).ready(function () {
 				// Push the page on to the back stack
 				Util.back.add();

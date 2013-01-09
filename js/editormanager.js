@@ -1,6 +1,5 @@
 // Inner class for managing the Ace editors
-function EditorManager () {
-    
+function EditorManager () {    
     // Initialize the ace editor object
     this.editor = ace.edit("editor");
     this.eSession = this.editor.getSession();
@@ -10,7 +9,7 @@ function EditorManager () {
     //this.editor.setReadOnly(true);
     this.editor.setHighlightActiveLine(false);
     this.eSession.setUseWrapMode(true);
-    this.editor.setValue("Welcome to your project! Select a file to edit.");
+    this.editor.setValue("Welcome to your project! Select a file to edit.");    
     
     // Initialize the ace editor object
     this.terminal = ace.edit("terminal");
@@ -52,39 +51,40 @@ function EditorManager () {
         aceEditor.setValue(oldValue + newValue, 1);
     };
     
-    this.setPreference = function (preference, value, aceEditor) {
-        var editor = (aceEditor) ? aceEditor : EM.editor;
+    this.setPreference = function (preference, value, aceEditor) {        
+        var editor = (aceEditor) ? aceEditor : {object: EM.editor, id: "editor"};
         switch (preference) {
             case 'theme':
-                editor.setTheme(value);
+                editor.object.setTheme("ace/theme/" + value);
                 break;
             case 'fontsize':
                 $( document ).ready(function () {
-                    $( "#editor" ).css('font-size', value);  
+                    $( "#" + editor.id ).css('font-size', value + "px"); // assuming font sizes in pixels
                 })                
                 break;
             case 'tabwidth':
-                editor.getSession().setTabSize(value);
+                editor.object.getSession().setTabSize(parseInt(value));
                 break;
             case 'softtabs':
-                editor.getSession().setUseSoftTabs(value);
+                editor.object.getSession().setUseSoftTabs(value);
                 break;
             case 'showlinenos':
-                editor.renderer.setShowGutter(value);
+                editor.object.renderer.setShowGutter(value);
                 break;
             case 'activeline':
-                editor.setHighlightActiveLine(value);
+                editor.object.setHighlightActiveLine(value);
                 break;
             case 'printmargin':
-                editor.setShowPrintMargin(value);
+                editor.object.setShowPrintMargin(value);
                 break;
             case 'wordwrap':
-                editor.getSession().setUseWrapMode(value);
+                editor.object.getSession().setUseWrapMode(value);
                 break;
         }
-    };
-    
+    };            
 }
 
-EM = new EditorManager();
-console.log("Created the EditorManager object");
+//$( document ).ready(function () {
+    EM = new EditorManager();
+    console.log("Created the EditorManager object");
+//})
