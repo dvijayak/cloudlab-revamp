@@ -7,12 +7,14 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
 		<script src="js/util.js"></script>		
-		<!-- Ace editor -->
-		<script type='text/javascript' src='http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js'></script>
+		<!--<!-- Ace editor -->-->
+		<!--<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>-->
+		<!--<script type="text/javascript" src="js/editormanager.js"></script>-->
 		<script>
 			// Load the script only when document loads to prevent some quirks
-			$(document).ready(function () {															
-				$( "<script type='text/javascript' src='js/editormanager.js'><\/script>").appendTo($( "body" ));				
+			$(document).ready(function () {				
+				//$( "<script type='text/javascript' src='js/editormanager.js'><\/script>").appendTo($( "body" ));
+				alert("CHO");
 			});			
 		</script>		
 		<!---------------->
@@ -64,7 +66,8 @@
 				}, Util.ajax.dataType);												
 			}
 			
-			Util.validateSession(getFiles(function (files) {
+			Util.validateSession( $( document ).ready(function () {
+				getFiles(function (files) {
 					// Generate list of files for the chosen project
 					var nFiles = files.length;				
 					for (var i = 0; i < nFiles; i++) {
@@ -101,13 +104,13 @@
 					}
 				}, function () {
 					$( "#browser ul" ).text("There are no files for this project.");
-				}, function () {					
+				}, function () {
 					$( "#toolbar" ).slideDown('fast');
 					$( "body" ).css('padding-top', '180px');
-					$( "#statusbar" ).css('margin-top', '120px');					
+					$( "#statusbar" ).css('margin-top', '120px');
 					EM.editor.setReadOnly(false);
 					// Show limited toolbar items if Student
-					var cookies = Util.cookiesToArray();				
+					var cookies = Util.cookiesToArray();
 					if (cookies['role'] == "1" ) {
 						$( "#new" ).hide();
 						$( "#save" ).hide();
@@ -116,35 +119,10 @@
 						$( "#submit" ).hide();
 						// Disable certain keyboard shortcuts
 						EM.editor.commands.removeCommand('newFile');
-						EM.editor.commands.removeCommand('saveFile');
+						EM.editor.commands.removeCommand('saveFile');					
 					}
-				})
-			//Util.validateSession(function (output) {
-				//if (output.status == "OK") {					
-				//	// Generate list of files for the chosen project				
-				//	var files = output.data.files;
-				//	var nFiles = files.length;				
-				//	for (var i = 0; i < nFiles; i++) {
-				//		// Create the UI elements
-				//		/* Note: by passing a data map to the click handler, we preserve the value of files[i].
-				//		 * Otherwise, files[i] would take the value of undefined
-				//		 */
-				//		// Clicking on a file opens it
-				//		$( "<li><a href='#'>" + files[i]['name'] + "." + files[i]['ext'] + "</a></li>").click({file: files[i]}, function (event) {
-				//			openFile(event.data.file);
-				//		}).appendTo( "#browser ul" );
-				//		
-				//		// Open the first file by default (can be changed to open last saved file via cookies, etc.)
-				//		if (i == 0) {
-				//			openFile(files[i]);
-				//		}
-				//	}
-				//}
-				//else if (output.status == "ZERO_RESULTS") {
-				//	$( "#browser ul" ).text("There are no files for this project.");			
-				//}
-							
-			/*}*/, data);
+				})				
+			}), data);
 			
 			// Open the specified file and load its contents in the editor
 			var openFile = function (file) {
@@ -542,7 +520,7 @@
 		<div id="preferencesDialog" class="modal hide fade in" aria-hidden="true">
 			<div class="modal-header">
 				<a class="close" data-dismiss="modal" href="#">&times;</a>
-				<h3>Editor Preferences</h3>
+				<h3>Preferences</h3>
 			</div>
 			<div class="modal-body">
 				<form class="form-horizontal">
@@ -554,88 +532,224 @@
 									element = $ ( this );
 								if ( element.attr('type') == 'checkbox') {
 									newValue = element.is(':checked');
-								}
+								}								
 								else {
 									newValue = element.val();	
 								}
-								EM.setPreference(element.prop('id'), newValue);
+								// Terminal setting
+								if (element.attr('name') == "terminal") {
+									EM.setPreference(element.prop('id'), newValue, {object: EM.terminal, id: "terminal"});
+								}
+								// Editor setting
+								else {
+									EM.setPreference(element.prop('id'), newValue);	
+								}
+								
 							})
 						});
 					</script>
-					<!-- Theme -->
-					<div class="control-group">
-						<label class="control-label" for="theme">Theme</label>
-						<div class="controls">
-							<select id="theme" class="preference">
-								<option value="twilight">Twilight</option>
-								<option value="cobalt">Cobalt</option>
-								<option value="textmate">Textmate</option>
-								<option value="eclipse">Eclipse</option>
-							</select>
+					
+					<!-- Editor Settings -->
+					<fieldset>
+						<legend>Editor Settings</legend>
+						<!-- Theme -->
+						<div class="control-group">
+							<label class="control-label" for="theme">Editor Theme</label>
+							<div class="controls">
+								<select id="theme" name="editor" class="preference">
+									<option value="ambiance">Ambiance</option>
+									<option value="chaos">Chaos</option>
+									<option value="chrome">Chrome</option>
+									<option value="clouds">Clouds</option>
+									<option value="clouds_midnight">Clouds Midnight</option>
+									<option value="cobalt">Cobalt</option>
+									<option value="crimson_editor">Crimson Editor</option>
+									<option value="dawn">Dawn</option>
+									<option value="dreamweaver">Dreamweaver</option>
+									<option value="eclipse">Eclipse</option>
+									<option value="github">Github</option>
+									<option value="idle_fingers">Idle Fingers</option>
+									<option value="kr_theme">KR Theme</option>
+									<option value="merbivore">Merbivore</option>
+									<option value="merbivore_soft">Merbivore Soft</option>
+									<option value="mono_industrial">Mono Industrial</option>
+									<option value="monokai">Monokai</option>
+									<option value="pastel_on_dark">Pastel on Dark</option>
+									<option value="solarized_dark">Solarized Dark</option>
+									<option value="solarized_light">Solarized Light</option>																
+									<option value="textmate">Textmate</option>
+									<option value="tomorrow">Tomorrow</option>
+									<option value="tomorrow_night">Tomorrow Night</option>
+									<option value="tomorrow_night_blue">Tomorrow Night Blue</option>
+									<option value="tomorrow_night_bright">Tomorrow Night Bright</option>
+									<option value="tomorrow_night_eighties">Tomorrow Night Eighties</option>
+									<option value="twilight" selected>Twilight</option>
+									<option value="vibrant_ink">Vibrant Ink</option>
+									<option value="xcode">Xcode</option>
+								</select>
+							</div>
 						</div>
-					</div>
-					<!-- Font size -->
-					<div class="control-group">
-						<label class="control-label" for="fontsize">Font size</label>
-						<div class="controls">
-							<input id="fontsize" class="preference" type="number" min="8" max="72" placeholder="8">
+						<!-- Font size -->
+						<div class="control-group">
+							<label class="control-label" for="fontsize">Font size</label>
+							<div class="controls">
+								<input id="fontsize" name="editor" class="preference" type="number" min="8" max="72" value="16" placeholder="(in pixels)">
+							</div>
 						</div>
-					</div>
-					<!-- Tab width -->
-					<div class="control-group">
-						<label class="control-label" for="tabwidth">Tab width</label>
-						<div class="controls">
-							<input id="tabwidth" class="preference" type="number" min="1" max="8" placeholder="4">
+						<!-- Tab width -->
+						<div class="control-group">
+							<label class="control-label" for="tabwidth">Tab width</label>
+							<div class="controls">
+								<input id="tabwidth" name="editor" class="preference" type="number" min="1" max="8" value="4" placeholder="(by spaces)">
+							</div>
+						</div>					
+						<!-- Soft tabs -->
+						<div class="control-group">
+							<label class="control-label" for="softtabs" rel="tooltip" data-placement="right" title="Enable soft tabs">Soft tabs</label>						
+							<div class="controls">							
+								<label class="checkbox">
+									<input id="softtabs" name="editor" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Enable soft tabs">
+								</label>						
+							</div>
 						</div>
-					</div>					
-					<!-- Soft tabs -->
-					<div class="control-group">
-						<label class="control-label" for="softtabs" rel="tooltip" data-placement="right" title="Enable soft tabs">Soft tabs</label>						
-						<div class="controls">							
-							<label class="checkbox">
-								<input id="softtabs" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Enable soft tabs">
-							</label>						
+						<!-- Show line numbers -->
+						<div class="control-group">						
+							<label class="control-label" for="showlinenos" rel="tooltip" data-placement="right" title="Show line numbers on the left">Line numbers</label>
+							<div class="controls">
+								<label class="checkbox">
+									<input id="showlinenos" name="editor" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show line numbers on the left">
+								</label>							
+							</div>						
 						</div>
-					</div>
-					<!-- Show line numbers -->
-					<div class="control-group">						
-						<label class="control-label" for="showlinenos" rel="tooltip" data-placement="right" title="Show line numbers on the left">Line numbers</label>
-						<div class="controls">
-							<label class="checkbox">
-								<input id="showlinenos" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show line numbers on the left">
-							</label>							
-						</div>						
-					</div>
-					<!-- Highlight active line -->
-					<div class="control-group">
-						<label class="control-label" for="activeline" rel="tooltip" data-placement="right" title="Highlight the active line">Active line</label>
-						<div class="controls">							
-							<input id="activeline" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Highlight the active line">
+						<!-- Highlight active line -->
+						<div class="control-group">
+							<label class="control-label" for="activeline" rel="tooltip" data-placement="right" title="Highlight the active line">Active line</label>
+							<div class="controls">							
+								<input id="activeline" name="editor" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Highlight the active line">
+							</div>
 						</div>
-					</div>
-					<!-- Show print margin -->
-					<div class="control-group">
-						<label class="control-label" for="printmargin" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">Print margin</label>
-						<div class="controls">
-							<label class="checkbox">
-								<input id="printmargin" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">
-							</label>
+						<!-- Show print margin -->
+						<div class="control-group">
+							<label class="control-label" for="printmargin" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">Print margin</label>
+							<div class="controls">
+								<label class="checkbox">
+									<input id="printmargin" name="editor" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">
+								</label>
+							</div>
 						</div>
-					</div>
-					<!-- Wrap words -->
-					<div class="control-group">
-						<label class="control-label" for="wordwrap" rel="tooltip" data-placement="right" title="Wrap words that overflow">Word wrap</label>
-						<div class="controls">
-							<label class="checkbox">
-								<input id="wordwrap" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Wrap words that overflow">
-							</label>
+						<!-- Wrap words -->
+						<div class="control-group">
+							<label class="control-label" for="wordwrap" rel="tooltip" data-placement="right" title="Wrap words that overflow">Word wrap</label>
+							<div class="controls">
+								<label class="checkbox">
+									<input id="wordwrap" name="editor" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Wrap words that overflow">
+								</label>
+							</div>
 						</div>
-					</div>
+					</fieldset>
+					
+					<!-- Terminal Settings -->
+					<fieldset>
+						<legend>Terminal Settings</legend>
+						<!-- Theme -->
+						<div class="control-group">
+							<label class="control-label" for="theme-terminal">Terminal Theme</label>
+							<div class="controls">
+								<select id="theme" name="terminal" class="preference">
+									<option value="ambiance">Ambiance</option>
+									<option value="chaos">Chaos</option>
+									<option value="chrome">Chrome</option>
+									<option value="clouds">Clouds</option>
+									<option value="clouds_midnight">Clouds Midnight</option>
+									<option value="cobalt" selected>Cobalt</option>
+									<option value="crimson_editor">Crimson Editor</option>
+									<option value="dawn">Dawn</option>
+									<option value="dreamweaver">Dreamweaver</option>
+									<option value="eclipse">Eclipse</option>
+									<option value="github">Github</option>
+									<option value="idle_fingers">Idle Fingers</option>
+									<option value="kr_theme">KR Theme</option>
+									<option value="merbivore">Merbivore</option>
+									<option value="merbivore_soft">Merbivore Soft</option>
+									<option value="mono_industrial">Mono Industrial</option>
+									<option value="monokai">Monokai</option>
+									<option value="pastel_on_dark">Pastel on Dark</option>
+									<option value="solarized_dark">Solarized Dark</option>
+									<option value="solarized_light">Solarized Light</option>																
+									<option value="textmate">Textmate</option>
+									<option value="tomorrow">Tomorrow</option>
+									<option value="tomorrow_night">Tomorrow Night</option>
+									<option value="tomorrow_night_blue">Tomorrow Night Blue</option>
+									<option value="tomorrow_night_bright">Tomorrow Night Bright</option>
+									<option value="tomorrow_night_eighties">Tomorrow Night Eighties</option>
+									<option value="twilight">Twilight</option>
+									<option value="vibrant_ink">Vibrant Ink</option>
+									<option value="xcode">Xcode</option>
+								</select>
+							</div>
+						</div>
+						<!-- Font size -->
+						<div class="control-group">
+							<label class="control-label" for="fontsize">Font size</label>
+							<div class="controls">
+								<input id="fontsize" name="terminal" class="preference" type="number" min="8" max="72" value="16" placeholder="16">
+							</div>
+						</div>
+						<!-- Tab width -->
+						<div class="control-group">
+							<label class="control-label" for="tabwidth">Tab width</label>
+							<div class="controls">
+								<input id="tabwidth" name="terminal" class="preference" type="number" min="1" max="8" value="16" placeholder="4">
+							</div>
+						</div>					
+						<!-- Soft tabs -->
+						<div class="control-group">
+							<label class="control-label" for="softtabs" rel="tooltip" data-placement="right" title="Enable soft tabs">Soft tabs</label>						
+							<div class="controls">							
+								<label class="checkbox">
+									<input id="softtabs" name="terminal" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Enable soft tabs">
+								</label>						
+							</div>
+						</div>
+						<!-- Show line numbers -->
+						<div class="control-group">						
+							<label class="control-label" for="showlinenos" rel="tooltip" data-placement="right" title="Show line numbers on the left">Line numbers</label>
+							<div class="controls">
+								<label class="checkbox">
+									<input id="showlinenos" name="terminal" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show line numbers on the left">
+								</label>							
+							</div>						
+						</div>
+						<!-- Highlight active line -->
+						<div class="control-group">
+							<label class="control-label" for="activeline" rel="tooltip" data-placement="right" title="Highlight the active line">Active line</label>
+							<div class="controls">							
+								<input id="activeline" name="terminal" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Highlight the active line">
+							</div>
+						</div>
+						<!-- Show print margin -->
+						<div class="control-group">
+							<label class="control-label" for="printmargin" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">Print margin</label>
+							<div class="controls">
+								<label class="checkbox">
+									<input id="printmargin" name="terminal" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Show print margin (80 chars)">
+								</label>
+							</div>
+						</div>
+						<!-- Wrap words -->
+						<div class="control-group">
+							<label class="control-label" for="wordwrap" rel="tooltip" data-placement="right" title="Wrap words that overflow">Word wrap</label>
+							<div class="controls">
+								<label class="checkbox">
+									<input id="wordwrap" name="terminal" class="preference" type="checkbox" rel="tooltip" data-placement="right" title="Wrap words that overflow">
+								</label>
+							</div>
+						</div>
+					</fieldset>
 				</form>
 			</div>
-			<div class="modal-footer">
-				<button id="apply" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Apply</button>
-				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>				
+			<div class="modal-footer">				
+				<button id="cancel" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Close</button>				
 			</div>				
 		</div>
 		
@@ -724,10 +838,12 @@
 			
 			});            
 		</script>
-
 		
 		<!-- socket.io.js for the clientside is served by the node.js server itself -->
 		<script src="http://localhost:8000/socket.io/socket.io.js"></script> <!-- TODO: Change on server -->
+		<!-- Ace editor -->
+		<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>
+		<script type="text/javascript" src="js/editormanager.js"></script>		
 		
     </body>
 </html>
