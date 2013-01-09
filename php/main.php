@@ -11,7 +11,7 @@
     /////////////////////////////////////////////////////////////////////////
      
     $main = new Main();    
-    
+        
     /* Log out the incoming connection's session if requested
      * Note: there does not have to be a valid session to log out
      */
