@@ -48,7 +48,8 @@
 				}, Util.ajax.dataType);												
 			}			
 			
-			Util.validateSession($( document ).ready(function () { getProjects(function (projects) {
+			Util.validateSession($( document ).ready(function () { 
+				getProjects(function (projects) {
 					console.log("getProjects: Begin");
 					// Generate list of projects for the chosen project
 					var nProjects = projects.length;				
@@ -96,7 +97,8 @@
 						$( "body" ).css('padding-top', '180px');
 						$( "#statusbar" ).css('margin-top', '120px');						
 					}
-				})}), data);			
+				})
+			}), data);			
 			
 			$( document ).ready(function () {
 				// Push the page on to the back stack

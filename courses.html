@@ -45,9 +45,12 @@
 							}
 						}
 						else if (output.status == "ZERO_RESULTS") {
-							$( "#browser" ).text("You have not been enrolled in any courses yet.");
-						}
-					}, data);
+
+							$( document ).ready(function () {
+								$( "#browser" ).text("You have not been enrolled in any courses yet.");
+							});
+						}					
+				}, data);
 				
 			});
 			
