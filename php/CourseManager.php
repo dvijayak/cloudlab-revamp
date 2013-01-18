@@ -91,8 +91,8 @@
 			}
 			else {
 				$query = "SELECT Courses.course_id AS 'id', Courses.course_name AS 'name', COUNT(Enrollments.user_id) AS 'heads'," .
-				" Courses.course_desc AS 'description' FROM Enrollments, Courses" .
-				" WHERE Enrollments.course_id = Courses.course_id GROUP BY Courses.course_id;";
+				" Courses.course_desc AS 'description' FROM Enrollments RIGHT OUTER JOIN Courses" .
+				" ON Enrollments.course_id = Courses.course_id GROUP BY Courses.course_id;";
 			}
 			$courses = $this->dbm->queryFetchAssoc($query);	
 			return $courses;		            
