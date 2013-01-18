@@ -64,9 +64,29 @@
 		<div class="container-fluid">
 			<div class="row-fluid">						
 				<h3>
-					<script>
-						// Display the correct modal and its correct controls
+					<script>						
 						$(function () {
+							// Populate enroll in courses select element
+							$( "#newUserDialog" ).on('show', function () {
+								var data = "getAllCourses=true",
+										success = function (output) {
+											if (output.status == "OK") {
+												var courseselect = $( "#newUserDialog #enroll" );
+												// Reset the courses select element								
+												courseselect.empty();
+												var courses = output.data.courses;
+												// Populate the courses select element												
+												var nCourses = courses.length;
+												for (var i = 0; i < nCourses; i++) {
+													var course = courses[i]['id'];
+													$( "<option value='" + course + "'>" + course + "</option>" ).appendTo( courseselect );	
+												}												
+											}
+										};
+								$.post(Util.ajax.url, data, success, Util.ajax.dataType);
+							});
+
+							// Display the correct modal and its correct controls
 							$( "#new-user" ).click(function () {
 								$( "#newUserDialog #title" ).text("Create a new user");								
 								$( "#newUserDialog #id" ).removeAttr('disabled');
@@ -191,9 +211,29 @@
 				<h3>
 					Courses
 					<button id="new-course" class="btn btn-inverse">New <i class="icon-plus icon-white"></i></button>
-					<script>
-						// Display the correct modal and its correct controls
+					<script>						
 						$(function () {
+							// Populate enroll users select element
+							$( "#newCourseDialog" ).on('show', function () {
+								var data = "getAllUsers=true",
+										success = function (output) {
+											if (output.status == "OK") {
+												var userselect = $( "#newCourseDialog #enroll" );
+												// Reset the users select element								
+												userselect.empty();
+												var users = output.data.users;
+												// Populate the users select element												
+												var nUsers = users.length;
+												for (var i = 0; i < nUsers; i++) {
+													var user = users[i]['id'];
+													$( "<option value='" + user + "'>" + user + "</option>" ).appendTo( userselect );	
+												}												
+											}
+										};
+								$.post(Util.ajax.url, data, success, Util.ajax.dataType);
+							});
+
+							// Display the correct modal and its correct controls
 							$( "#new-course" ).click(function () {
 								$( "#newCourseDialog #title" ).text("Create a new course");								
 								$( "#newCourseDialog #id" ).removeAttr('disabled');
@@ -213,7 +253,7 @@
 					var refreshCoursesTable = function () {						
 						var data = "getAllCourses=true";
 						$.post(Util.ajax.url, data, function (output) {
-							populateUsersTable(output.data.courses);
+							populateCoursesTable(output.data.courses);
 						}, Util.ajax.dataType);
 					}					
 					
@@ -264,10 +304,10 @@
 										// Refresh the Courses table
 										refreshCoursesTable();
 										if (output.status == "OK") {
-											alert("Deleted course " + event.data.idnum + " successfully.");
+											alert("Deleted course " + event.data.course.id + " successfully.");
 										}
 										else {
-											alert("Attempt to delete course " + event.data.idnum + " failed!");
+											alert("Attempt to delete course " + event.data.course.id + " failed!");
 										}										
 									}, Util.ajax.dataType);
 								}																
@@ -362,9 +402,9 @@
 					</div>
 					
 					<div class="control-group">
-						<label class="control-label" for="enroll">Enroll in course</label>
+						<label class="control-label" for="enroll">Enroll in course(s)</label>
 						<div class="controls">
-							<select id="enroll">								
+							<select id="enroll" multiple>								
 							</select>
 						</div>
 					</div>
@@ -447,10 +487,10 @@
 										"email" : $("#newUserDialog #email").val(),
 										"role" : $("#newUserDialog #role").val()
 									};							
-									newUser(user);
+									editUser(user);
 								}
 							}
-						});
+						});					
 					});
 				</script>	
 				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true">Create</button>
@@ -489,9 +529,9 @@
 					</div>
 
 					<div class="control-group">
-						<label class="control-label" for="enroll">Enroll user</label>
+						<label class="control-label" for="enroll">Enroll user(s)</label>
 						<div class="controls">
-							<select id="enroll">								
+							<select id="enroll" multiple>								
 							</select>
 						</div>
 					</div>					
@@ -503,9 +543,20 @@
 					// Create the specified course
 					var newCourse = function (course) {
 						var courseinfo = course['id'] + ", " + course['name'];
+						var enrollments = "",
+								selectedusers = $( "#newCourseDialog #enroll" ).val(),
+								nEnrollments = (selectedusers) ? selectedusers.length : 0;						
+						for (var i = 0; i < nEnrollments; i++) {
+							if (i == nEnrollments - 1) {
+								enrollments += selectedusers[i];
+							}
+							else {
+								enrollments += selectedusers[i] + ",";
+							}
+						}						
 						var data = "id=" + course['id'] + "&name=" + course['name'] +
-							"&description=" + course['description'] + "&newCourse=true";
-						
+							"&description=" + course['description'] + "&enrollments=" + enrollments + "&newCourse=true";						
+
 						$.post(Util.ajax.url, data, function (output) {
 							// Refresh the Courses table
 							refreshCoursesTable();
@@ -521,8 +572,19 @@
 					// Edit the specified course
 					var editCourse = function (course) {
 						var courseinfo = course['id'] + ", " + course['name'];
+						var enrollments = "",
+								selectedusers = $( "#newCourseDialog #enroll" ).val(),
+								nEnrollments = (selectedusers) ? selectedusers.length : 0;						
+						for (var i = 0; i < nEnrollments; i++) {
+							if (i == nEnrollments - 1) {
+								enrollments += selectedusers[i];
+							}
+							else {
+								enrollments += selectedusers[i] + ",";
+							}
+						}										
 						var data = "id=" + course['id'] + "&name=" + course['name'] +
-							"&description=" + course['description'] + "&editCourse=true";
+							"&description=" + course['description'] + "&enrollments=" + enrollments + "&editCourse=true";						
 							
 						$.post(Util.ajax.url, data, function (output) {
 							// Refresh the Courses table
@@ -556,7 +618,7 @@
 								};
 								editCourse(course);
 							}
-						});
+						});						
 					});
 				</script>	
 				<button id="create" class="btn btn-success" data-dismiss="modal" aria-hidden="true" >Create</button>

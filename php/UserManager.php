@@ -21,12 +21,7 @@
 		/**
 		 * Create a new user
 		 */
-		public function createUser ($user) {
-			// Ensures that the required fields are not empty strings
-			if (empty($user['idnum']) || empty($user['id']) || empty($user['passhash'])) {
-				return false;
-			}
-
+		public function createUser ($user) {			
 			$idnum = mysql_real_escape_string($user['idnum']);
 			$id = mysql_real_escape_string($user['id']);
 			$passhash = mysql_real_escape_string($user['passhash']);			
@@ -39,18 +34,14 @@
 			"('" . $idnum . "', '" . $id . "', '" . $passhash . "', '" . $fname . "', '" . $lname . "', '" . $email . "', " . $role . ");";
 			
 			$success = $this->dbm->query($query);
+			// echo $query;
 			return $success;
 		}
 		
 		/**
 		 * Update the existing user
 		 */
-		public function editUser ($user) {
-			// Ensures that the password is not an empty string
-			echo $user['passhash'];
-			if (empty($user['passhash'])) {			
-				return false;
-			}			
+		public function editUser ($user) {		
 			$idnum = mysql_real_escape_string($user['idnum']);
 			$id = mysql_real_escape_string($user['id']);
 			$passhash = mysql_real_escape_string($user['passhash']);
@@ -65,7 +56,7 @@
 			" user_email = '" . $email . "', group_id = " . $role .
 			" WHERE user_number = '" . $idnum . "';";
 			
-			$success = $this->dbm->query($query);
+			$success = $this->dbm->query($query);			
 			return $success;			
 		}
 		

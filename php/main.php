@@ -213,8 +213,8 @@
                     "lname" => $_POST['lname'],
                     "email" => $_POST['email'],
                     "role" => $_POST['role']
-                );
-                $success = $main->getUserManager()->createUser($user);
+                );                
+                $success = $main->getUserManager()->createUser($user);                
                 if ($success) {
                     $output = $main->buildResponse();
                 }
@@ -267,7 +267,8 @@
                 $course = array(                    
                     "id" => $_POST['id'],                    
                     "name" => $_POST['name'],
-                    "description" => $_POST['description']
+                    "description" => $_POST['description'],
+                    "enrollments" => (!empty($_POST['enrollments'])) ? $_POST['enrollments'] : NULL
                 );
                 $success = $main->getCourseManager()->createCourse($course);
                 if ($success) {
@@ -282,8 +283,9 @@
                 $course = array(
                     "id" => $_POST['id'],                    
                     "name" => $_POST['name'],
-                    "description" => $_POST['description']
-                );
+                    "description" => $_POST['description'],
+                    "enrollments" => (!empty($_POST['enrollments'])) ? $_POST['enrollments'] : NULL
+                );                
                 $success = $main->getCourseManager()->editCourse($course);
                 if ($success) {
                     $output = $main->buildResponse();

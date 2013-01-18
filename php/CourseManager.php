@@ -28,8 +28,15 @@
 			
 			$query = "INSERT INTO Courses VALUES " .
 			"('" . $id . "', '" . $name . "', '" . $description . "');";
-			
-			$success = $this->dbm->query($query);
+			$success = $this->dbm->query($query);			
+			if (!$success) {
+				return $success;
+			}
+
+			if ($course['enrollments'] !== NULL) {
+				$users = explode(",", $course['enrollments']);				
+				$success = $this->enroll($id, $users);
+			}
 			return $success;
 		}
 		
@@ -42,9 +49,17 @@
 			$description = mysql_real_escape_string($course['description']);
 			
 			// Note that the id cannot be changed						
-			$query = "UPDATE Courses SET course_name = '" . $name . "', course_desc = '" . $description . "';'";			
-			
-			$success = $this->dbm->query($query);
+			$query = "UPDATE Courses SET course_name = '" . $name . "', course_desc = '" . $description . "'" . 
+			" WHERE course_id = '" . $id . "';";			
+			$success = $this->dbm->query($query);			
+			if (!$success) {
+				return $success;
+			}
+
+			if ($course['enrollments'] !== NULL) {
+				$users = explode(",", $course['enrollments']);				
+				$success = $this->enroll($id, $users);
+			}
 			return $success;			
 		}		
 
@@ -60,13 +75,13 @@
 			array_push($queries, $query);			
 			// Delete all projects under the course
 			$query = "DELETE FROM Projects WHERE course_id = '" . $id . "';";
-			array_push($queries, $query);			
+			array_push($queries, $query);						
 			// Withdraw all users from the course
 			$query = "DELETE FROM Enrollments WHERE course_id = '" . $id . "';";
-			array_push($queries, $query);			
+			array_push($queries, $query);						
 			// Delete the course
-			$query = "DELETE FROM Courses WHERE course_id = '" . $course . "';";
-			array_push($queries, $query);
+			$query = "DELETE FROM Courses WHERE course_id = '" . $id . "';";
+			array_push($queries, $query);			
 			
 			$results = $this->dbm->queryChain($queries);
 			$success = true;
@@ -75,16 +90,16 @@
 				if (!$success) {
 					break;
 				}
-			}									
+			}			
 			return $success;			
 		}
 		
-        /**
-         * Retrieve the list of courses based on the specified parameters
-         * If a username is provided, list courses for which the user is enrolled in,
-         * else, list all courses that exist in the system
-         */
-        public function getCourses ($username=NULL) {
+    /**
+     * Retrieve the list of courses based on the specified parameters
+     * If a username is provided, list courses for which the user is enrolled in,
+     * else, list all courses that exist in the system
+     */
+    public function getCourses ($username=NULL) {
 			if (!empty($username)) {
 				$user = mysql_real_escape_string($username);
 				$query = "SELECT DISTINCT Enrollments.course_id AS 'course' FROM Courses, Enrollments WHERE Enrollments.user_id = '" . $user . "';";				
@@ -96,12 +111,22 @@
 			}
 			$courses = $this->dbm->queryFetchAssoc($query);	
 			return $courses;		            
-        }
+    }
 		
 		/**
-		 * Retrieve the list of all
+		 * Enroll the specified users in the course
 		 */
-		
+		public function enroll ($course, $users) {			
+			foreach ($users as $user) {				
+				$useridnum = mysql_real_escape_string($user['idnum']);
+				$query = "INSERT INTO Enrollments (course_id, user_id) VALUES ('" . $course . "', '" . $user . "');";
+				$success = $this->dbm->query($query);				
+				if (!$success) {
+					break;
+				}
+			}
+			return $success;
+		}
 	}
 	
 ?>
