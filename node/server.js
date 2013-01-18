@@ -94,14 +94,21 @@ io.sockets.on('connection', function (socket) {
 			var command;
 			if (data.ext == "c" || data.ext == "C") {
 				command = "/usr/bin/gcc";
+				args = "-Wall -pedantic -std=c99";
 			}
 			else if (data.ext == "cpp" || data.ext == "CPP") {
 				command = "/usr/bin/g++";
+				args = "-Wall -pedantic";
 			}
-			else command = "/usr/bin/gcc"
+			else { 
+				command = "/usr/bin/gcc";
+				args = "-Wall -pedantic -std=c99";
+			}
+			command += " " + (COMPILE_PATH + "/" + file) + " -o " + (COMPILE_PATH + "/" + file) + ".out" + " " + args;
 			console.log("Compiling " + file + "...");
+			console.log(command + "\n");
 			// I could have set file = COMPILE_PATH + .... in the first place, but I want to avoid any potential future parsing
-			var child = exec(command + " " + (COMPILE_PATH + "/" + file) + " -o " + (COMPILE_PATH + "/" + file) + ".out -Wall -pedantic", function (error, stdout, stderr) {
+			var child = exec(command, function (error, stdout, stderr) {
 				var stdoutput = ((stdout) ? stdout : "No output\n"),
 					stderror = ((stderr) ? stderr : "No compilation issues!\n");
 				//var stdoutput = stdout,

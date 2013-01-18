@@ -6,8 +6,8 @@
     error_reporting(-1);        
     
     // PHP CONSOLE FOR DEBUGGING PURPOSES: ONLY WORKS WITH THE CHROME BROWSER
-    require_once("PhpConsole.php");
-    PHPConsole::start();
+    //require_once("PhpConsole.php");
+    //PHPConsole::start();
     /////////////////////////////////////////////////////////////////////////
      
     $main = new Main();    
