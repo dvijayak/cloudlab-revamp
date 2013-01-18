@@ -6,17 +6,7 @@
 		<title>Cloud Lab: Editor</title>		
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-		<script src="js/util.js"></script>		
-		<!--<!-- Ace editor -->-->
-		<!--<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>-->
-		<!--<script type="text/javascript" src="js/editormanager.js"></script>-->
-		<script>
-			// Load the script only when document loads to prevent some quirks
-			$(document).ready(function () {				
-				//$( "<script type='text/javascript' src='js/editormanager.js'><\/script>").appendTo($( "body" ));
-				alert("CHO");
-			});			
-		</script>		
+		<script src="js/util.js"></script>
 		<!---------------->
 		<script>
 			var selectedFile, // Document scope: Keep track of the file that was selected
@@ -840,7 +830,7 @@
 		</script>
 		
 		<!-- socket.io.js for the clientside is served by the node.js server itself -->
-		<script src="http://localhost:8000/socket.io/socket.io.js"></script> <!-- TODO: Change on server -->
+		<script src="http://23.21.85.72:8000/socket.io/socket.io.js"></script> <!-- TODO: Change on server -->
 		<!-- Ace editor -->
 		<script type="text/javascript" src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js"></script>
 		<script type="text/javascript" src="js/editormanager.js"></script>		
