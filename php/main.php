@@ -344,7 +344,7 @@
         
         private $userData = null;
         
-        public function __construct ($root = "/cloudlab_revamp/") { /* TODO: Change on server */
+        public function __construct ($root = "/") { /* TODO: Change on server */
             $this->paths = new stdClass();            
             $this->paths->root = $root; /* TODO: Change on server */            
             $this->paths->domain = null/*$_SERVER['SERVER_NAME']*/; /* Do not explicitly state "localhost"; use null instead.
