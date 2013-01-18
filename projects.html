@@ -48,7 +48,9 @@
 				}, Util.ajax.dataType);												
 			}			
 			
-			Util.validateSession(getProjects(function (projects) {
+			Util.validateSession($( document ).ready(function () { 
+				getProjects(function (projects) {
+					console.log("getProjects: Begin");
 					// Generate list of projects for the chosen project
 					var nProjects = projects.length;				
 					for (var i = 0; i < nProjects; i++) {
@@ -95,18 +97,19 @@
 						$( "body" ).css('padding-top', '180px');
 						$( "#statusbar" ).css('margin-top', '120px');						
 					}
-				}), data);			
+				})
+			}), data);			
 			
 			$( document ).ready(function () {
 				// Push the page on to the back stack
 				Util.back.add();
 			});			
 		</script>		
-        <!-- Bootstrap -->
-        <link href="css/bootstrap.css" rel="stylesheet">
-        <script src="js/bootstrap.min.js"></script>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <script src="js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>
-        <!-- --------- -->
+    <!-- --------- -->
 		<link href="css/general.css" rel="stylesheet">
         <style>
 			body { padding-top: 120px; } /* Accounts for top fixed header */
@@ -120,8 +123,8 @@
 	<body>		
 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
 			<script>
-				$(function () {
-					var cookies = Util.cookiesToArray();					
+				$(function () {					
+					var cookies = Util.cookiesToArray();										
 					$( "#header #title" ).text(cookies['course'].toUpperCase() + ": Choose Project");
 				});
 			</script>				

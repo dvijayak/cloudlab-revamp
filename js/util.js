@@ -75,32 +75,41 @@ function Util () {
     };
     
     // Validates the session and then optionally performs a given AJAX task (with optional input data) to the same server
+    /* Note: Sometimes the server responds to the request so fast that it reaches the 
+     * browser before all elements are even created. Always ensure that the document is ready
+     * when manipulating the DOM in a callback function that is hooked to an AJAX request
+     */
     this.validateSession = function (task, taskData) {        
         $.post(Util.ajax.url,
                "validate=true",
                function (output) {                    
                     // Ensure that the user is logged in
                     if (output.status == "VALIDATED") {
+			console.log("Util: Validated the user");
                         /* Perform default operations */
+
+                        $( document ).ready(function () {							
+                        	// Bind onclick events to the Back and Logout buttons
+	                        $( "#header #back" ).click(function () {
+	                            //window.location.href=document.referrer;
+	                            Util.back.go();                            
+	                        });
                         
-                        // Bind onclick events to the Back and Logout buttons
-                        $( "#header #back" ).click(function () {
-                            //window.location.href=document.referrer;                            
-                            Util.back.go();
-                        });
+	                        $( "#header #logout" ).click(function () {
+	                            Util.logout();
+	                        });
                         
-                        $( "#header #logout" ).click(function () {
-                            Util.logout();
-                        });
+				// Personalize page			
+				var cookies = Util.cookiesToArray();
+				$( "#header #user" ).text(cookies['firstname']);
                         
-						// Personalize page
-						var cookies = Util.cookiesToArray();
-						$( "#header #user" ).text(cookies['firstname']);
-                        
-                        // Perform the additional AJAX task only if it was specified
-                        if (task !== undefined) {                                                    
-                            $.post(Util.ajax.url, taskData, task, Util.ajax.dataType);                                                           
-                        }                    
+                       		// Perform the additional AJAX task only if it was specified
+	                        if (task !== undefined) {
+					console.log("Performing the AJAX Task");                                                    
+	                            $.post(Util.ajax.url, taskData, task, Util.ajax.dataType);                                                           
+	                        } else console.log("Task is undefined for some reason");                    
+
+			});
                     }
                     // Incorrect login credentials
                     else if (output.status == "INTRUDER") {

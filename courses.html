@@ -45,9 +45,12 @@
 							}
 						}
 						else if (output.status == "ZERO_RESULTS") {
-							$( "#browser" ).text("You have not been enrolled in any courses yet.");
-						}
-					}, data);
+
+							$( document ).ready(function () {
+								$( "#browser" ).text("You have not been enrolled in any courses yet.");
+							});
+						}					
+				}, data);
 				
 			});
 			
@@ -56,11 +59,11 @@
 				Util.back.add();
 			});
 		</script>		
-        <!-- Bootstrap -->
-        <link href="css/bootstrap.css" rel="stylesheet">
-        <script src="js/bootstrap.min.js"></script>
-        <!-- --------- -->
-        <style>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <script src="js/bootstrap.min.js"></script>
+    <!-- --------- -->
+    <style>
 			#browser {
 				height: 500px;
 				width: 500px;
@@ -72,7 +75,7 @@
                    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
                         box-shadow: 0 1px 2px rgba(0,0,0,.05);     
 			}
-        </style>
+    </style>
     </head>
 	<body>		
 		<div id="header" class="navbar navbar-fixed-top navbar-inverse">
