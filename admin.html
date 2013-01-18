@@ -362,7 +362,7 @@
 					</div>
 					
 					<div class="control-group">
-						<label class="control-label" for="enroll">Enroll in</label>
+						<label class="control-label" for="enroll">Enroll in course</label>
 						<div class="controls">
 							<select id="enroll">								
 							</select>
@@ -392,7 +392,7 @@
 					};
 					
 					// Edit the specified user
-					var editUser = function (user) {
+					var editUser = function (user) {						
 						var userinfo = user['idnum'] + ", " + user['id'] + ", " + user['fname'] + " " + user['lname'];
 						var data = "idnum=" + user['idnum'] + "&id=" + user['id'] + "&passhash=" + user['passhash']
 							+ "&fname=" + user['fname'] + "&lname=" + user['lname'] + "&email=" + user['email']
@@ -412,31 +412,43 @@
 					
 					$(function () {
 						$( "#newUserDialog #create" ).click(function () {
-
-							var user = {
-								"idnum" : $( "#newUserDialog #id" ).val(),
-								"id" : $( "#newUserDialog #username" ).val(),
-								"passhash" : CryptoJS.MD5(String($("#newUserDialog #password").val())),
-								"fname" : $("#newUserDialog #firstname").val(),
-								"lname" : $("#newUserDialog #lastname").val(),
-								"email" : $("#newUserDialog #email").val(),
-								"role" : $("#newUserDialog #role").val()
-							};
-							newUser(user);
-						});
-						
-						$( "#newUserDialog #update" ).click(function () {
-							if (confirm("Are you sure you want to update user " + $( "#newUserDialog #username" ).val() + "?")) {
+							console.log($( "#newUserDialog #id" ).val());
+							if (!$( "#newUserDialog #id" ).val() ||
+								!$( "#newUserDialog #username ").val() ||
+								!$( "#newUserDialog #password" ).val()) {
+								alert("Error: Student #/Username/Password cannot be empty!");
+							}
+							else {
 								var user = {
 									"idnum" : $( "#newUserDialog #id" ).val(),
 									"id" : $( "#newUserDialog #username" ).val(),
-									"passhash" : CryptoJS.MD5(String($("#newUserDialog #password").val())),
+									"passhash" : CryptoJS.MD5(String($( "#newUserDialog #password" ).val())),
 									"fname" : $("#newUserDialog #firstname").val(),
 									"lname" : $("#newUserDialog #lastname").val(),
 									"email" : $("#newUserDialog #email").val(),
 									"role" : $("#newUserDialog #role").val()
-								};
-								editUser(user);
+								};							
+								newUser(user);
+							}
+						});
+						
+						$( "#newUserDialog #update" ).click(function () {
+							if (confirm("Are you sure you want to update user " + $( "#newUserDialog #username" ).val() + "?")) {
+								if (!$( "#newUserDialog #password" ).val()) {
+									alert("Error: Password cannot be empty!");
+								}
+								else {
+									var user = {
+										"idnum" : $( "#newUserDialog #id" ).val(),
+										"id" : $( "#newUserDialog #username" ).val(),
+										"passhash" : CryptoJS.MD5(String($( "#newUserDialog #password" ).val())),
+										"fname" : $("#newUserDialog #firstname").val(),
+										"lname" : $("#newUserDialog #lastname").val(),
+										"email" : $("#newUserDialog #email").val(),
+										"role" : $("#newUserDialog #role").val()
+									};							
+									newUser(user);
+								}
 							}
 						});
 					});
@@ -477,7 +489,7 @@
 					</div>
 
 					<div class="control-group">
-						<label class="control-label" for="enroll">Enroll in</label>
+						<label class="control-label" for="enroll">Enroll user</label>
 						<div class="controls">
 							<select id="enroll">								
 							</select>

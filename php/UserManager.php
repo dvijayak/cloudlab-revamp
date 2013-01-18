@@ -22,9 +22,14 @@
 		 * Create a new user
 		 */
 		public function createUser ($user) {
+			// Ensures that the required fields are not empty strings
+			if (empty($user['idnum']) || empty($user['id']) || empty($user['passhash'])) {
+				return false;
+			}
+
 			$idnum = mysql_real_escape_string($user['idnum']);
 			$id = mysql_real_escape_string($user['id']);
-			$passhash = mysql_real_escape_string($user['passhash']);
+			$passhash = mysql_real_escape_string($user['passhash']);			
 			$fname = mysql_real_escape_string($user['fname']);
 			$lname = mysql_real_escape_string($user['lname']);
 			$email = mysql_real_escape_string($user['email']);
@@ -41,6 +46,11 @@
 		 * Update the existing user
 		 */
 		public function editUser ($user) {
+			// Ensures that the password is not an empty string
+			echo $user['passhash'];
+			if (empty($user['passhash'])) {			
+				return false;
+			}			
 			$idnum = mysql_real_escape_string($user['idnum']);
 			$id = mysql_real_escape_string($user['id']);
 			$passhash = mysql_real_escape_string($user['passhash']);
